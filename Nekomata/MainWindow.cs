@@ -12,6 +12,7 @@ namespace Nekomata
 {
     public partial class MainWindow : Form
     {
+        private AboutBox aboutbox;
         public MainWindow()
         {
             InitializeComponent();
@@ -21,6 +22,14 @@ namespace Nekomata
         {
 
         }
-     
+
+        private void aboutNekomataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (this.aboutbox == null)
+            {
+                aboutbox = new AboutBox();
+            }
+            aboutbox.ShowDialog();
+        }
     }
 }

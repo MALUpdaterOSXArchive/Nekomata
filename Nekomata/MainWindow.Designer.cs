@@ -196,6 +196,7 @@
             this.aboutNekomataToolStripMenuItem.Name = "aboutNekomataToolStripMenuItem";
             this.aboutNekomataToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.aboutNekomataToolStripMenuItem.Text = "About Nekomata";
+            this.aboutNekomataToolStripMenuItem.Click += new System.EventHandler(this.aboutNekomataToolStripMenuItem_Click);
             // 
             // checkForUpdatesToolStripMenuItem
             // 
