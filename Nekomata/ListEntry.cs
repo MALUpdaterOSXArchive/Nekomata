@@ -24,19 +24,23 @@ namespace Nekomata
     }
     class ListEntry
     {
-        public long titleId;
+        public int titleId;
         public EntryType type;
         public String title;
         public EntryStatus entryStatus;
-        public long progress;
-        public long progressVolumes;
+        public int progress;
+        public int progressVolumes;
         public bool repeating;
-        public long repeatCount;
+        public int repeatCount;
         public String startDate;
         public String endDate;
         public String personalComments;
+        public int totalSegment;
+        public int totalVolumes;
+        public String mediaFormat;
         public int rating;
-        public ListEntry (long etitleid, String etitle, EntryStatus estatus, long eprogress)
+
+        public ListEntry (int etitleid, String etitle, EntryStatus estatus, int eprogress)
         {
             // This constructor creates an anime entry
             this.titleId = etitleid;
@@ -52,7 +56,7 @@ namespace Nekomata
             this.personalComments = "";
             this.rating = 0;
         }
-        public ListEntry(long etitleid, String etitle, EntryStatus estatus, long eprogress, long eprogressvolumes)
+        public ListEntry(int etitleid, String etitle, EntryStatus estatus, int eprogress, int eprogressvolumes)
         {
             // This constructor creates an manga entry
             this.titleId = etitleid;
@@ -111,7 +115,7 @@ namespace Nekomata
             return "";
         }
 
-        public void setRatingTwentytoStandardRating(long ratingTwenty)
+        public void setRatingTwentytoStandardRating(int ratingTwenty)
         {
             // Converts Rating Twenty to a raw score
             double advrating = 0.0;
