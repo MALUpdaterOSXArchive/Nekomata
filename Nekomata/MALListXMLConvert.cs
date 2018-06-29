@@ -22,6 +22,7 @@ namespace Nekomata
             tmplist = new List<Dictionary<string, object>>();
             attributes = new List<Dictionary<string, object>>();
         }
+        
         public List<ListEntry> RetrieveAniListList(EntryType type, String Username)
         {
             this.currentuserid = this.GetAniListUserID(Username);
@@ -84,11 +85,24 @@ namespace Nekomata
                             return this.NormalizeAniListAnimeList();
                         case EntryType.Manga:
                             return this.NormalizeAniListMangaList();
-                            break;
                         default:
                             return new List<ListEntry>();
                     }
                 }
+            }
+            else
+            {
+                return new List<ListEntry>();
+            }
+        }
+
+        public List<ListEntry> RetrieveKitsuList(EntryType type, String Username)
+        {
+            this.currentuserid = this.GetKitsuUserID(Username);
+            if (this.currentuserid > 0)
+            {
+                this.currenttype = type;
+                return this.PerformRetrieveAniListList(0);
             }
             else
             {
@@ -253,7 +267,23 @@ namespace Nekomata
             {
                 return -1;
             }
-
+        }
+        private int GetKitsuUserID(String username)
+        {
+            RestRequest request = new RestRequest("https://kitsu.io/api/edge/users?filter[slug]="+ username, Method.POST);
+   
+            IRestResponse response = restclient.Execute(request);
+            if (response.StatusCode.GetHashCode() == 200)
+            {
+                Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
+                List<Dictionary<string, object>> data = (List<Dictionary<string, object>>)jsonData["data"];
+                int userid = (int)data[0]["id"];
+                return userid;
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 }
