@@ -8,16 +8,15 @@ using Newtonsoft.Json;
 
 namespace Nekomata
 {
-    class MALListXMLConvert
+    class ListNormalizer
     {
         private List<Dictionary<String, Object>> tmplist;
-        private List<Dictionary<string, Object>> tmpincludes;
         private List<Dictionary<String, Object>> attributes;
         RestClient restclient;
         private int currentuserid;
         private EntryType currenttype;
 
-        public MALListXMLConvert()
+        public ListNormalizer()
         {
             restclient = new RestClient();
             tmplist = new List<Dictionary<string, object>>();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using RestSharp;
 using Newtonsoft.Json;
 using System.Data.SQLite;
@@ -24,7 +23,7 @@ namespace Nekomata
             rclient = new RestClient();
             this.initalizeDatabase();
         }
-        public async Task<int> GetMALIDFromKitsuID(int kitsuid, EntryType type)
+        public int GetMALIDFromKitsuID(int kitsuid, EntryType type)
         {
             int titleid = this.RetreiveSavedMALIDFromServiceID(Service.Kitsu, kitsuid, type);
             if (titleid > -1)
@@ -72,7 +71,7 @@ namespace Nekomata
 
         }
 
-        public async Task<int> GetMALIDFromAniListID(int anilistid, EntryType type)
+        public int GetMALIDFromAniListID(int anilistid, EntryType type)
         {
             int titleid = this.RetreiveSavedMALIDFromServiceID(Service.AniList, anilistid, type);
             if (titleid > -1)

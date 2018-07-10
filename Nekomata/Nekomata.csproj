@@ -84,7 +84,8 @@
     <Compile Include="MainWindow.Designer.cs">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="MALListXMLConvert.cs" />
+    <Compile Include="ListNormalizer.cs" />
+    <Compile Include="NormalListToMALXML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TitleIDConverter.cs" />
