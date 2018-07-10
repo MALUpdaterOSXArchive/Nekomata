@@ -15,8 +15,8 @@ namespace Nekomata
         private string Username;
         private Service currentservice;
         private TitleIDConverter tconverter;
-        
-        private const String headerstring = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\t<!--\n\tCreated by Nekomata\n\tProgrammed by MAL Updater OS X Group Software (James Moy), a division of Moy IT Solutions \n\tNote that not all values are exposed by the API and not all fields will be exported.\n\t--> \n\n\t<myanimelist>"
+
+        private const String headerstring = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\t<!--\n\tCreated by Nekomata\n\tProgrammed by MAL Updater OS X Group Software (James Moy), a division of Moy IT Solutions \n\tNote that not all values are exposed by the API and not all fields will be exported.\n\t--> \n\n\t<myanimelist>";
         private const String footerstring = "\n\n\t</myanimelist>";
         private const String animepretag = "\n\n\t\t<anime>";
         private const String animeendtag = "\n\t\t</anime>";
@@ -29,26 +29,30 @@ namespace Nekomata
             this.tconverter = new TitleIDConverter();
         }
 
-        public string ConvertNormalizedListToMAL(List<ListEntry> list, EntryType type, String username, Service listservice)
+        public void ConvertNormalizedListToMAL(List<ListEntry> list, EntryType type, String username, Service listservice)
         {
             this.Username = username;
             this.listtype = type;
             this.list = list;
             this.validlist = new List<ListEntry>();
             ProcessList();
-            switch (type)
+        }
+        public string GenerateXML()
+        {
+            switch (listtype)
             {
                 case EntryType.Anime:
-                    break;
+                    return GenerateAnimeXML();
                 case EntryType.Manga:
-                    break;
+                    return GenerateMangaXML();
                 default:
                     return "";
             }
         }
+
         private void ProcessList()
         {
-            foreach(ListEntry entry in list)
+            foreach (ListEntry entry in list)
             {
                 int convertedtitleid = GetConvertedTitleID(entry.titleId);
                 if (convertedtitleid > 0)
@@ -71,7 +75,7 @@ namespace Nekomata
             sb.Append(tabformatting + "<username>" + this.Username + "</username");
             sb.Append(tabformatting + "<user_export_type>1</user_export_type>");
             sb.Append("\n\t</myinfo>");
-            foreach(ListEntry entry in validlist)
+            foreach (ListEntry entry in validlist)
             {
                 sb.Append(animepretag);
                 sb.Append(tabformatting + "<series_animedb_id>" + entry.titleId + "</series_animedb_id>");
@@ -90,7 +94,7 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_comments><![CDATA[" + entry.personalComments + "]]></my_comments>");
                 sb.Append(tabformatting + "<my_times_watched>" + entry.repeatCount + "</my_times_watched>");
                 sb.Append(tabformatting + "<my_rewatch_value></my_rewatch_value>");
-                sb.Append(tabformatting + "<my_tags><![CDATA[" + "" +"]]></my_tags>");
+                sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
                 sb.Append(tabformatting + "<my_rewatching>" + (entry.repeating ? "1" : "0") + "</my_rewatching>");
                 sb.Append(tabformatting + "<my_rewatching_ep>0</my_rewatching_ep>");
                 sb.Append(tabformatting + "<update_on_import>1</update_on_import>");
@@ -189,6 +193,12 @@ namespace Nekomata
                 default:
                     return "";
             }
+        }
+        public void cleanup()
+        {
+            this.list = null;
+            this.validlist = null;
+            this.faillist = null;
         }
     }
 }

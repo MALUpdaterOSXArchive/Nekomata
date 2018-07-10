@@ -279,7 +279,7 @@ namespace Nekomata
                 if (!object.ReferenceEquals(null,jsonData["data"]))
                 {
                     metadata = (List<Dictionary<string, object>>)jsonData["data"];
-                    tmpincludes.AddRange(metadata);
+                    attributes.AddRange(metadata);
                 }
                 tmplist.AddRange(list);
                 bool nextpage = (!object.ReferenceEquals(null,(Dictionary<string, object>)((Dictionary<string, object>)jsonData["links"])["next"]));
@@ -490,7 +490,7 @@ namespace Nekomata
             // This methods finds the metadata that is associated with a title id
             Dictionary<string, object> searchpattern = new Dictionary<string, object>();
             searchpattern["id"] = titleid;
-            return tmpincludes.FirstOrDefault(x => searchpattern.All(x.Contains));
+            return attributes.FirstOrDefault(x => searchpattern.All(x.Contains));
         }
         private int ConvertRatingTwentyToRawScore(int ratingTwenty)
         {
