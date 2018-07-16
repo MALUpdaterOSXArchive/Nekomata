@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Nekomata
 {
@@ -12,19 +13,23 @@ namespace Nekomata
     {
         private List<Dictionary<String, Object>> tmplist;
         private List<Dictionary<String, Object>> attributes;
-        RestClient restclient;
+        RestClient krestclient;
+        RestClient arestclient;
         private int currentuserid;
         private EntryType currenttype;
+        public bool erroredout;
 
         public ListNormalizer()
         {
-            restclient = new RestClient();
+            arestclient = new RestClient("https://graphql.anilist.co");
+            krestclient = new RestClient("https://kitsu.io/api/edge");
             tmplist = new List<Dictionary<string, object>>();
             attributes = new List<Dictionary<string, object>>();
         }
         
         public List<ListEntry> RetrieveAniListList(EntryType type, String Username)
         {
+            this.erroredout = false;
             this.currentuserid = this.GetAniListUserID(Username);
             if (this.currentuserid > 0)
             {
@@ -33,13 +38,14 @@ namespace Nekomata
             }
             else
             {
+                this.erroredout = true;
                 return new List<ListEntry>();
             }
         }
     
         private List<ListEntry> PerformRetrieveAniListList(int page)
         {
-            RestRequest request = new RestRequest("https://graphql.anilist.co", Method.POST);
+            RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
             switch (currenttype)
             {
@@ -53,7 +59,7 @@ namespace Nekomata
                     return new List<ListEntry>();
             }
 
-            IRestResponse response = restclient.Execute(request);
+            IRestResponse response = arestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
@@ -93,6 +99,7 @@ namespace Nekomata
             }
             else
             {
+                this.erroredout = true;
                 return new List<ListEntry>();
             }
         }
@@ -238,6 +245,7 @@ namespace Nekomata
 
         public List<ListEntry> RetrieveKitsuList(EntryType type, String Username)
         {
+            this.erroredout = false;
             this.currentuserid = this.GetKitsuUserID(Username);
             if (this.currentuserid > 0)
             {
@@ -246,6 +254,7 @@ namespace Nekomata
             }
             else
             {
+                this.erroredout = true;
                 return new List<ListEntry>();
             }
         }
@@ -266,23 +275,25 @@ namespace Nekomata
                 default:
                     return new List<ListEntry>();
             }
-            RestRequest request = new RestRequest("https://kitsu.io/api/edge/library-entries?filter[userId]=" + this.currentuserid + "&filter[kind]=" + listtype +"&include=" + listtype + "&fields[" + listtype + "]=" + includes + "&page[limit]=500&page[offset]=" + page, Method.GET);
+            RestRequest request = new RestRequest("/library-entries?filter[userId]=" + this.currentuserid + "&filter[kind]=" + listtype +"&include=" + listtype + "&fields[" + listtype + "]=" + includes + "&page[limit]=500&page[offset]=" + page, Method.GET);
             request.RequestFormat = DataFormat.Json;
+            request.AddHeader("Accept", "application/vnd.api+json");
 
-            IRestResponse response = restclient.Execute(request);
+            IRestResponse response = krestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
                 List<Dictionary<string, object>> list;
                 List<Dictionary<string, object>> metadata;
-                list = (List<Dictionary<string, object>>)jsonData["data"];
+                list = ((JArray)jsonData["data"]).ToObject<List<Dictionary<string, object>>>();
                 if (!object.ReferenceEquals(null,jsonData["data"]))
                 {
-                    metadata = (List<Dictionary<string, object>>)jsonData["data"];
+                    metadata = ((JArray)jsonData["included"]).ToObject<List<Dictionary<string, object>>>();
                     attributes.AddRange(metadata);
                 }
                 tmplist.AddRange(list);
-                bool nextpage = (!object.ReferenceEquals(null,(Dictionary<string, object>)((Dictionary<string, object>)jsonData["links"])["next"]));
+                Dictionary<string, object> links = ((JObject)jsonData["links"]).ToObject<Dictionary<string, object>>();
+                bool nextpage = links.ContainsKey("next");
                 if (nextpage)
                 {
                     int newpage = page + 500;
@@ -304,6 +315,7 @@ namespace Nekomata
             }
             else
             {
+                this.erroredout = true;
                 return new List<ListEntry>();
             }
         }
@@ -315,79 +327,13 @@ namespace Nekomata
 
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
-                int titleId = (int)entry["id"];
-                Dictionary<string, object> attributes = FindMetaData(titleId);
-                String title = (String)((Dictionary<string, object>)attributes["attributes"])["canonicalTitle"];
-                String tmpstatus = (String)((Dictionary<string, object>)entry["attributes"])["status"];
-                bool reconsuming = (bool)((Dictionary<string, object>)entry["attributes"])["reconsuming"];
-                EntryStatus eStatus;
-                switch (tmpstatus)
-                {
-                    case "PAUSED":
-                        eStatus = EntryStatus.paused;
-                        break;
-                    case "PLANNING":
-                        eStatus = EntryStatus.planning;
-                        break;
-                    case "CURRENT":
-                        eStatus = EntryStatus.current;
-                        break;
-                    case "REPEATING":
-                        reconsuming = true;
-                        eStatus = EntryStatus.current;
-                        break;
-                    case "COMPLETED":
-                        eStatus = EntryStatus.completed;
-                        break;
-                    case "DROPPED":
-                        eStatus = EntryStatus.dropped;
-                        break;
-                    default:
-                        eStatus = EntryStatus.current;
-                        break;
-                }
-                int progress = (int)((Dictionary<string, object>)entry["attributes"])["progress"];
-                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress);
-                newentry.totalSegment = (!(object.ReferenceEquals(null, ((Dictionary<string, object>)attributes["attributes"])["episodeCount"]))) ? (int)((Dictionary<string, object>)attributes["attributes"])["episodeCount"] : 0;
-                newentry.mediaFormat = (String)((Dictionary<string, object>)attributes["attributes"])["subtype"];
-                newentry.repeating = reconsuming;
-                newentry.repeatCount = (int)((Dictionary<string, object>)entry["attributes"])["reconsumeCount"];
-                newentry.personalComments = (String)((Dictionary<string, object>)entry["attributes"])["notes"];
-                newentry.rating = (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["ratingTwenty"])) ? ConvertRatingTwentyToRawScore((int)((Dictionary<string, object>)entry["attributes"])["ratingTwenty"]) : 0;
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["startedAt"]))
-                {
-                    newentry.startDate = ((string)((Dictionary<string, object>)entry["attributes"])["startedAt"]).Substring(0, 10);
-                }
-                else
-                {
-                    newentry.startDate = "0000-00-00";
-                }
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["finishedAt"]))
-                {
-                    newentry.startDate = ((string)((Dictionary<string, object>)entry["attributes"])["finishedAt"]).Substring(0, 10);
-                }
-                else
-                {
-                    newentry.endDate = "0000-00-00";
-                }
-                // Add entry
-                tmplistentries.Add(newentry);
-            }
-            return tmplistentries;
-        }
-
-        private List<ListEntry> NormalizeKitsuMangaList()
-        {
-            // Create temp list
-            List<ListEntry> tmplistentries = new List<ListEntry>();
-
-            foreach (Dictionary<String, Object> entry in this.tmplist)
-            {
-                int titleId = (int)entry["id"];
-                Dictionary<string, object> attributes = FindMetaData(titleId);
-                String title = (String)((Dictionary<string, object>)attributes["attributes"])["canonicalTitle"];
-                String tmpstatus = (String)((Dictionary<string, object>)entry["attributes"])["status"];
-                bool reconsuming = (bool)((Dictionary<string, object>)entry["attributes"])["reconsuming"];
+                int entryId = int.Parse((string)entry["id"]);
+                int titleId = int.Parse((string)((JObject)((JObject)(((JObject)entry["relationships"]).ToObject<Dictionary<string, object>>()["anime"])).ToObject<Dictionary<string, object>>()["data"]).ToObject<Dictionary<string, object>>()["id"]);
+                Dictionary<string, object> eattributes = ((JObject)entry["attributes"]).ToObject<Dictionary<string, object>>();
+                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId)["attributes"]);
+                String title = (String)attributes["canonicalTitle"];
+                String tmpstatus = (String)eattributes["status"];
+                bool reconsuming = (bool)eattributes["reconsuming"];
                 EntryStatus eStatus;
                 switch (tmpstatus)
                 {
@@ -410,27 +356,97 @@ namespace Nekomata
                         eStatus = EntryStatus.current;
                         break;
                 }
-                int progress = (int)((Dictionary<string, object>)entry["attributes"])["progress"];
-                int progressVolumes = (int)((Dictionary<string, object>)entry["attributes"])["volumesOwned"];
-                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress, progressVolumes);
-                newentry.totalSegment = (!(object.ReferenceEquals(null, ((Dictionary<string, object>)attributes["attributes"])["chapterCount"]))) ? (int)((Dictionary<string, object>)attributes["attributes"])["chapterCount"] : 0;
-                newentry.totalVolumes = (!(object.ReferenceEquals(null, ((Dictionary<string, object>)attributes["attributes"])["volumeCount"]))) ? (int)((Dictionary<string, object>)attributes["attributes"])["volumeCount"] : 0;
-                newentry.mediaFormat = (String)((Dictionary<string, object>)attributes["attributes"])["subtype"];
+                int progress = Convert.ToInt32((long)eattributes["progress"]);
+                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress);
+                newentry.totalSegment = !(object.ReferenceEquals(null, (attributes["episodeCount"]))) ? Convert.ToInt32((long)attributes["episodeCount"]) : 0;
+                newentry.mediaFormat = (String)attributes["showType"];
                 newentry.repeating = reconsuming;
-                newentry.repeatCount = (int)((Dictionary<string, object>)entry["attributes"])["reconsumeCount"];
-                newentry.personalComments = (String)((Dictionary<string, object>)entry["attributes"])["notes"];
-                newentry.rating = (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["ratingTwenty"])) ? ConvertRatingTwentyToRawScore((int)((Dictionary<string, object>)entry["attributes"])["ratingTwenty"]) : 0;
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["startedAt"]))
+                newentry.repeatCount = Convert.ToInt32((long)eattributes["reconsumeCount"]);
+                newentry.personalComments = (String)eattributes["notes"];
+                newentry.rating = !object.ReferenceEquals(null, eattributes["ratingTwenty"]) ? ConvertRatingTwentyToRawScore(Convert.ToInt32((long)eattributes["ratingTwenty"])) : 0;
+                if (!object.ReferenceEquals(null, eattributes["startedAt"]))
                 {
-                    newentry.startDate = ((string)((Dictionary<string, object>)entry["attributes"])["startedAt"]).Substring(0, 10);
+                    DateTime startDate = (DateTime)eattributes["startedAt"];
+                    newentry.startDate = startDate.Year + "-" + startDate.Month + "-" + startDate.Day;
                 }
                 else
                 {
                     newentry.startDate = "0000-00-00";
                 }
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["attributes"])["finishedAt"]))
+                if (!object.ReferenceEquals(null, eattributes["finishedAt"]))
                 {
-                    newentry.startDate = ((string)((Dictionary<string, object>)entry["attributes"])["finishedAt"]).Substring(0, 10);
+                    DateTime finishDate = (DateTime)eattributes["finishedAt"];
+                    newentry.endDate = finishDate.Year + "-" + finishDate.Month + "-" + finishDate.Day;
+                }
+                else
+                {
+                    newentry.endDate = "0000-00-00";
+                }
+                // Add entry
+                tmplistentries.Add(newentry);
+            }
+            return tmplistentries;
+        }
+
+        private List<ListEntry> NormalizeKitsuMangaList()
+        {
+            // Create temp list
+            List<ListEntry> tmplistentries = new List<ListEntry>();
+
+            foreach (Dictionary<String, Object> entry in this.tmplist)
+            {
+                int entryId = int.Parse((string)entry["id"]);
+                int titleId = int.Parse((string)((JObject)((JObject)(((JObject)entry["relationships"]).ToObject<Dictionary<string, object>>()["manga"])).ToObject<Dictionary<string, object>>()["data"]).ToObject<Dictionary<string, object>>()["id"]);
+                Dictionary<string, object> eattributes = ((JObject)entry["attributes"]).ToObject<Dictionary<string, object>>();
+                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId)["attributes"]);
+                String title = (String)attributes["canonicalTitle"];
+                String tmpstatus = (String)eattributes["status"];
+                bool reconsuming = (bool)eattributes["reconsuming"];
+                EntryStatus eStatus;
+                switch (tmpstatus)
+                {
+                    case "on_hold":
+                        eStatus = EntryStatus.paused;
+                        break;
+                    case "planned":
+                        eStatus = EntryStatus.planning;
+                        break;
+                    case "current":
+                        eStatus = EntryStatus.current;
+                        break;
+                    case "completed":
+                        eStatus = EntryStatus.completed;
+                        break;
+                    case "dropped":
+                        eStatus = EntryStatus.dropped;
+                        break;
+                    default:
+                        eStatus = EntryStatus.current;
+                        break;
+                }
+                int progress = Convert.ToInt32((long)eattributes["progress"]);
+                int progressVolumes = Convert.ToInt32((long)eattributes["volumesOwned"]);
+                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress);
+                newentry.totalSegment = !(object.ReferenceEquals(null, (attributes["chapterCount"]))) ? Convert.ToInt32((long)attributes["chapterCount"]) : 0;
+                newentry.totalVolumes = !(object.ReferenceEquals(null, (attributes["volumeCount"]))) ? Convert.ToInt32((long)attributes["volumeCount"]) : 0;
+                newentry.mediaFormat = (String)attributes["mangaType"];
+                newentry.repeating = reconsuming;
+                newentry.repeatCount = Convert.ToInt32((long)eattributes["reconsumeCount"]);
+                newentry.personalComments = (String)eattributes["notes"];
+                newentry.rating = !object.ReferenceEquals(null, eattributes["ratingTwenty"]) ? ConvertRatingTwentyToRawScore(Convert.ToInt32((long)eattributes["ratingTwenty"])) : 0;
+                if (!object.ReferenceEquals(null, eattributes["startedAt"]))
+                {
+                    DateTime startDate = (DateTime)eattributes["startedAt"];
+                    newentry.startDate = startDate.Year + "-" + startDate.Month + "-" + startDate.Day;
+                }
+                else
+                {
+                    newentry.startDate = "0000-00-00";
+                }
+                if (!object.ReferenceEquals(null, eattributes["finishedAt"]))
+                {
+                    DateTime finishDate = (DateTime)eattributes["finishedAt"];
+                    newentry.endDate = finishDate.Year + "-" + finishDate.Month + "-" + finishDate.Day;
                 }
                 else
                 {
@@ -448,11 +464,11 @@ namespace Nekomata
         private int GetAniListUserID(String username)
         {
             // This methods find a user id associated with a username
-            RestRequest request = new RestRequest("https://graphql.anilist.co", Method.POST);
+            RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
             request.AddBody("{ \"query\" : \"query ($name: String) {\n  User (name: $name) {\n    id\n    name\n    mediaListOptions {\n      scoreFormat\n    }\n }\n}\", \"variables\" : { \"name\" :" + username + "} }");
 
-            IRestResponse response = restclient.Execute(request);
+            IRestResponse response = arestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
@@ -469,14 +485,16 @@ namespace Nekomata
         private int GetKitsuUserID(String username)
         {
             // This methods find a user id associated with a username
-            RestRequest request = new RestRequest("https://kitsu.io/api/edge/users?filter[slug]="+ username, Method.POST);
-   
-            IRestResponse response = restclient.Execute(request);
+            RestRequest request = new RestRequest("/users?filter[slug]="+ username, Method.GET);
+            request.RequestFormat = DataFormat.Json;
+            request.AddHeader("Accept", "application/vnd.api+json");
+            IRestResponse response = krestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
-                List<Dictionary<string, object>> data = (List<Dictionary<string, object>>)jsonData["data"];
-                int userid = (int)data[0]["id"];
+                List<Dictionary<string, object>> data = ((JArray)jsonData["data"]).ToObject<List<Dictionary<string, object>>>();
+                Dictionary<string, object> user = data[0];
+                int userid = int.Parse(((string)user["id"]));
                 return userid;
             }
             else
@@ -489,7 +507,7 @@ namespace Nekomata
         {
             // This methods finds the metadata that is associated with a title id
             Dictionary<string, object> searchpattern = new Dictionary<string, object>();
-            searchpattern["id"] = titleid;
+            searchpattern["id"] = titleid.ToString();
             return attributes.FirstOrDefault(x => searchpattern.All(x.Contains));
         }
         private int ConvertRatingTwentyToRawScore(int ratingTwenty)
@@ -558,6 +576,15 @@ namespace Nekomata
                     break;
             }
             return (int)(advrating * 100);
+        }
+        private Dictionary<string,object> JObjectToDictionary(JObject jobject)
+        {
+            return jobject.ToObject<Dictionary<string, object>>();
+        }
+        public void cleanup()
+        {
+            tmplist = new List<Dictionary<string, object>>();
+            attributes = new List<Dictionary<string, object>>();
         }
     }
 }

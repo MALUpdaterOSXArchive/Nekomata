@@ -10,7 +10,7 @@ namespace Nekomata
     {
         private List<ListEntry> list;
         private List<ListEntry> validlist;
-        private List<ListEntry> faillist;
+        public List<ListEntry> faillist;
         private EntryType listtype;
         private string Username;
         private Service currentservice;
@@ -35,6 +35,7 @@ namespace Nekomata
             this.listtype = type;
             this.list = list;
             this.validlist = new List<ListEntry>();
+            this.faillist = new List<ListEntry>();
             ProcessList();
         }
         public string GenerateXML()
@@ -49,7 +50,10 @@ namespace Nekomata
                     return "";
             }
         }
-
+        public bool InvalidEntriesExist()
+        {
+            return faillist.Count > 0;
+        }
         private void ProcessList()
         {
             foreach (ListEntry entry in list)
@@ -87,10 +91,10 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_start_date>" + entry.startDate + "</my_start_date>");
                 sb.Append(tabformatting + "<my_finish_date>" + entry.endDate + "</my_finish_date>");
                 sb.Append(tabformatting + "<my_rated></my_rated>");
-                sb.Append(tabformatting + "<my_score>" + entry.rating + "</my_score>");
+                sb.Append(tabformatting + "<my_score>" + entry.rating/10 + "</my_score>");
                 sb.Append(tabformatting + "<my_dvd></my_dvd>");
                 sb.Append(tabformatting + "<my_storage></my_storage>");
-                sb.Append(tabformatting + "<my_status>" + entry.entryStatus + "</my_status>");
+                sb.Append(tabformatting + "<my_status>" + ConvertNormalizedStatus(entry.entryStatus) + "</my_status>");
                 sb.Append(tabformatting + "<my_comments><![CDATA[" + entry.personalComments + "]]></my_comments>");
                 sb.Append(tabformatting + "<my_times_watched>" + entry.repeatCount + "</my_times_watched>");
                 sb.Append(tabformatting + "<my_rewatch_value></my_rewatch_value>");
@@ -125,9 +129,9 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_start_date>" + entry.startDate + "</my_start_date>");
                 sb.Append(tabformatting + "<my_finish_date>" + entry.endDate + "</my_finish_date>");
                 sb.Append(tabformatting + "<my_scanalation_group><![CDATA[]]></my_scanalation_group>");
-                sb.Append(tabformatting + "<my_score>" + entry.rating + "</my_score>");
+                sb.Append(tabformatting + "<my_score>" + entry.rating/10 + "</my_score>");
                 sb.Append(tabformatting + "<my_storage></my_storage>");
-                sb.Append(tabformatting + "<my_status>" + entry.entryStatus + "</my_status>");
+                sb.Append(tabformatting + "<my_status>" + ConvertNormalizedStatus(entry.entryStatus) + "</my_status>");
                 sb.Append(tabformatting + "<my_comments><![CDATA[" + entry.personalComments + "]]></my_comments>");
                 sb.Append(tabformatting + "<my_times_read>" + entry.repeatCount + "</my_times_read>");
                 sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
@@ -196,9 +200,9 @@ namespace Nekomata
         }
         public void cleanup()
         {
-            this.list = null;
-            this.validlist = null;
-            this.faillist = null;
+            this.list.Clear();
+            this.validlist.Clear();
+            this.faillist.Clear();
         }
     }
 }

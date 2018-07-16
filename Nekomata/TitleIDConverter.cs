@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using RestSharp;
 using Newtonsoft.Json;
 using System.Data.SQLite;
+using Newtonsoft.Json.Linq;
 
 namespace Nekomata
 {
@@ -15,12 +17,14 @@ namespace Nekomata
 
     class TitleIDConverter
     {
-        RestClient rclient;
+        RestClient raclient;
+        RestClient rkclient;
         SQLiteConnection sqlitecon;
 
         public TitleIDConverter()
         {
-            rclient = new RestClient();
+            raclient = new RestClient("https://graphql.anilist.co");
+            rkclient = new RestClient("https://kitsu.io/api/edge");
             this.initalizeDatabase();
         }
         public int GetMALIDFromKitsuID(int kitsuid, EntryType type)
@@ -45,19 +49,22 @@ namespace Nekomata
 
             String filterstr = "myanimelist/" + typestr;
    
-            RestRequest request = new RestRequest("https://kitsu.io/api/edge/" + typestr + "/" + kitsuid.ToString() + "?include=mappings&fields[anime]=id", Method.GET);
-    
-            IRestResponse response = rclient.Execute(request);
+            RestRequest request = new RestRequest( "/" + typestr + "/" + kitsuid.ToString() + "?include=mappings&fields[anime]=id", Method.GET);
+            request.RequestFormat = DataFormat.Json;
+            request.AddHeader("Accept", "application/vnd.api+json");
+
+            IRestResponse response = rkclient.Execute(request);
+            Thread.Sleep(1);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
-                List<Dictionary<string, object>> included = (List<Dictionary<string, object>>)jsonData["included"];
+                List<Dictionary<string, object>> included = ((JArray)jsonData["included"]).ToObject<List<Dictionary<string, object>>>();
                 foreach (Dictionary<string,object> map in included)
                 {
-                    Dictionary<string, object> attr = (Dictionary<string, object>)map["attributes"];
-                    if (String.Equals(((String)attr["externalSite"]),typestr,StringComparison.OrdinalIgnoreCase))
+                    Dictionary<string, object> attr = JObjectToDictionary((JObject)map["attributes"]);
+                    if (String.Equals(((String)attr["externalSite"]),"myanimelist/" + typestr,StringComparison.OrdinalIgnoreCase))
                     {
-                        int malid = (int)attr["externalId"];
+                        int malid = int.Parse((string)attr["externalId"]);
                         this.SaveIDtoDatabase(Service.Kitsu, malid, kitsuid, type);
                         return malid;
                     }
@@ -91,11 +98,12 @@ namespace Nekomata
                     break;
             }
 
-            RestRequest request = new RestRequest("https://graphql.anilist.co", Method.POST);
+            RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
             request.AddBody("{ \"query\" : \"query ($id: Int!, $type: MediaType) {\n  Media(id: $id, type: $type) {\n    id\n    idMal\n  }\n}\", \"variables\" : { \"id\" :" + anilistid.ToString() + ", \"type\" : " + type + "} }");
 
-            IRestResponse response = rclient.Execute(request);
+            IRestResponse response = raclient.Execute(request);
+            Thread.Sleep(1);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
@@ -119,10 +127,10 @@ namespace Nekomata
             switch (listService)
             {
                 case Service.AniList:
-                    sql = "SELECT malid FROM tableids WHERE anilist_id = " + titleid.ToString() + " AND mediatype = " + mediatype.ToString();
+                    sql = "SELECT malid FROM titleids WHERE anilist_id = " + titleid.ToString() + " AND mediatype = " + mediatype.GetHashCode();
                     break;
                 case Service.Kitsu:
-                    sql = "SELECT malid FROM tableids WHERE kitsu_id = " + titleid.ToString() + " AND mediatype = " + mediatype.ToString();
+                    sql = "SELECT malid FROM titleids WHERE kitsu_id = " + titleid.ToString() + " AND mediatype = " + mediatype.GetHashCode();
                     break;
                 default:
                     break;
@@ -146,13 +154,13 @@ namespace Nekomata
                int mediatype = type == EntryType.Anime ? 0 : 1;
                switch (listservice)
                {
-                   case Service.AniList:
-                        sql = "INSERT INTO tableids (malid,anilist_id,mediatype) VALUES (" + malid.ToString() + "," + servicetitleid.ToString() + "," + type.ToString() + ")";
+                    case Service.AniList:
+                        sql = "UPDATE titleids SET anilist_id = " + servicetitleid.ToString() + " WHERE mediatype = " + mediatype.GetHashCode() + " AND malid = " + malid.ToString();
                         break;
-                   case Service.Kitsu:
-                        sql = "INSERT INTO tableids (malid,kitsu_id,mediatype) VALUES (" + malid.ToString() + "," + servicetitleid.ToString() + "," + type.ToString() + ")";
+                    case Service.Kitsu:
+                        sql = "UPDATE titleids SET kitsu_id = " + servicetitleid.ToString() + " WHERE mediatype = " + mediatype.GetHashCode() + " AND malid = " + malid.ToString();
                         break;
-                   default:
+                    default:
                         return;
                }
                SQLiteCommand cmd = new SQLiteCommand(sql, sqlitecon);
@@ -173,10 +181,10 @@ namespace Nekomata
             switch (listservice)
             {
                 case Service.AniList:
-                    sql = "UPDATE titleids SET anilist_id = " + servicetitleid.ToString() + " WHERE mediatype = " + mediatype.ToString() + " AND malid = " + malid.ToString();
+                    sql = "INSERT INTO titleids (malid,anilist_id,mediatype) VALUES (" + malid.ToString() + "," + servicetitleid.ToString() + "," + type.GetHashCode() + ")";
                     break;
                 case Service.Kitsu:
-                    sql = "UPDATE titleids SET kitsu_id = " + servicetitleid.ToString() + " WHERE mediatype = " + mediatype.ToString() + " AND malid = " + malid.ToString();
+                    sql = "INSERT INTO titleids (malid,kitsu_id,mediatype) VALUES (" + malid.ToString() + "," + servicetitleid.ToString() + "," + type.GetHashCode() + ")";
                     break;
                 default:
                     return;
@@ -189,7 +197,7 @@ namespace Nekomata
         private bool CheckIfEntryExists(int malid, EntryType type)
         {
             int mediatype = type == EntryType.Anime ? 0 : 1;
-            String sql = "SELECT malid FROM tableids WHERE malid = " + malid.ToString() + " AND mediatype = " + mediatype.ToString();
+            String sql = "SELECT malid FROM titleids WHERE malid = " + malid.ToString() + " AND mediatype = " + mediatype.GetHashCode();
          
             SQLiteCommand cmd = new SQLiteCommand(sql, sqlitecon);
             SQLiteDataReader reader = cmd.ExecuteReader();
@@ -214,9 +222,15 @@ namespace Nekomata
                 SQLiteConnection.CreateFile("Nekomata.sqlite");
                 sqlitecon = new SQLiteConnection("Data Source=Nekomata.sqlite;Version=3;");
                 sqlitecon.Open();
-                SQLiteCommand createtable = new SQLiteCommand("CREATE TABLE titleids (anidb_id INT, anilist_id INT, kitsu_id INT, malid INT, animeplanet_id VARCHAR(50), mediatype INT");
+                SQLiteCommand createtable = new SQLiteCommand("CREATE TABLE titleids (anidb_id INT, anilist_id INT, kitsu_id INT, malid INT, animeplanet_id VARCHAR(50), mediatype INT)");
+                createtable.Connection = this.sqlitecon;
                 createtable.ExecuteNonQuery();
             }
+        }
+
+        private Dictionary<string, object> JObjectToDictionary(JObject jobject)
+        {
+            return jobject.ToObject<Dictionary<string, object>>();
         }
     }
 }

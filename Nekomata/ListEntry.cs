@@ -9,12 +9,12 @@ using System;
 
 namespace Nekomata
 {
-    enum EntryType
+    public enum EntryType
     {
-        Anime,
-        Manga
+        Anime = 0,
+        Manga = 1
     }
-    enum EntryStatus
+    public enum EntryStatus
     {
         current,
         completed,
@@ -22,7 +22,7 @@ namespace Nekomata
         paused,
         planning
     }
-    class ListEntry
+    public class ListEntry
     {
         public int titleId;
         public EntryType type;
