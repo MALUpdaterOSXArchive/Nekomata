@@ -58,15 +58,18 @@ namespace Nekomata
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
-                List<Dictionary<string, object>> included = ((JArray)jsonData["included"]).ToObject<List<Dictionary<string, object>>>();
-                foreach (Dictionary<string,object> map in included)
+                if (jsonData.ContainsKey("included"))
                 {
-                    Dictionary<string, object> attr = JObjectToDictionary((JObject)map["attributes"]);
-                    if (String.Equals(((String)attr["externalSite"]),"myanimelist/" + typestr,StringComparison.OrdinalIgnoreCase))
+                    List<Dictionary<string, object>> included = ((JArray)jsonData["included"]).ToObject<List<Dictionary<string, object>>>();
+                    foreach (Dictionary<string, object> map in included)
                     {
-                        int malid = int.Parse((string)attr["externalId"]);
-                        this.SaveIDtoDatabase(Service.Kitsu, malid, kitsuid, type);
-                        return malid;
+                        Dictionary<string, object> attr = JObjectToDictionary((JObject)map["attributes"]);
+                        if (String.Equals(((String)attr["externalSite"]), "myanimelist/" + typestr, StringComparison.OrdinalIgnoreCase))
+                        {
+                            int malid = int.Parse((string)attr["externalId"]);
+                            this.SaveIDtoDatabase(Service.Kitsu, malid, kitsuid, type);
+                            return malid;
+                        }
                     }
                 }
                 return -1;

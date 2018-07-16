@@ -52,7 +52,7 @@ namespace Nekomata
         }
         public bool InvalidEntriesExist()
         {
-            return faillist.Count > 0;
+            return (faillist.Count > 0);
         }
         private void ProcessList()
         {
@@ -76,7 +76,7 @@ namespace Nekomata
             StringBuilder sb = new StringBuilder();
             sb.Append(headerstring);
             sb.Append("\n\n\t<myinfo>");
-            sb.Append(tabformatting + "<username>" + this.Username + "</username");
+            sb.Append(tabformatting + "<username>" + this.Username + "</username>");
             sb.Append(tabformatting + "<user_export_type>1</user_export_type>");
             sb.Append("\n\t</myinfo>");
             foreach (ListEntry entry in validlist)
@@ -101,7 +101,7 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
                 sb.Append(tabformatting + "<my_rewatching>" + (entry.repeating ? "1" : "0") + "</my_rewatching>");
                 sb.Append(tabformatting + "<my_rewatching_ep>0</my_rewatching_ep>");
-                sb.Append(tabformatting + "<update_on_import>1</update_on_import>");
+                sb.Append(tabformatting + "<update_on_import>0</update_on_import>");
                 sb.Append(animeendtag);
             }
             sb.Append(footerstring);
@@ -113,7 +113,7 @@ namespace Nekomata
             StringBuilder sb = new StringBuilder();
             sb.Append(headerstring);
             sb.Append("\n\n\t<myinfo>");
-            sb.Append(tabformatting + "<username>" + this.Username + "</username");
+            sb.Append(tabformatting + "<username>" + this.Username + "</username>");
             sb.Append(tabformatting + "<user_export_type>2</user_export_type>");
             sb.Append("\n\t</myinfo>");
             foreach (ListEntry entry in validlist)
@@ -136,7 +136,7 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_times_read>" + entry.repeatCount + "</my_times_read>");
                 sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
                 sb.Append(tabformatting + "<my_reread_value></my_reread_value>");
-                sb.Append(tabformatting + "<update_on_import>1</update_on_import>");
+                sb.Append(tabformatting + "<update_on_import>0</update_on_import>");
                 sb.Append(mangaendtag);
             }
             sb.Append(footerstring);

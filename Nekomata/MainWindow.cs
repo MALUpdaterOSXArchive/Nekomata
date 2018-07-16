@@ -97,11 +97,14 @@ namespace Nekomata
                 nltoMALXML.ConvertNormalizedListToMAL(userlist, selectedtype, username, listservice);
                 if (nltoMALXML.InvalidEntriesExist())
                 {
-                    FailedWindow fdlg = new FailedWindow(nltoMALXML.faillist);
-                    if (fdlg.ShowDialog() == DialogResult.OK)
+                    this.Invoke(new Action(delegate
                     {
-                        GenerateXMLandSave();
-                    }
+                        FailedWindow fdlg = new FailedWindow(nltoMALXML.faillist);
+                        if (fdlg.ShowDialog() == DialogResult.OK)
+                        {
+                            GenerateXMLandSave();
+                        }
+                    }));
                 }
                 else
                 {

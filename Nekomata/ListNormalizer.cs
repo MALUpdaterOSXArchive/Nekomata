@@ -367,7 +367,7 @@ namespace Nekomata
                 if (!object.ReferenceEquals(null, eattributes["startedAt"]))
                 {
                     DateTime startDate = (DateTime)eattributes["startedAt"];
-                    newentry.startDate = startDate.Year + "-" + startDate.Month + "-" + startDate.Day;
+                    newentry.startDate = startDate.Year + "-" + (startDate.Month < 10 ? "0" + startDate.Month.ToString() : startDate.Month.ToString()) + "-" + (startDate.Day < 10 ? "0" + startDate.Day.ToString() : startDate.Day.ToString());
                 }
                 else
                 {
@@ -376,7 +376,7 @@ namespace Nekomata
                 if (!object.ReferenceEquals(null, eattributes["finishedAt"]))
                 {
                     DateTime finishDate = (DateTime)eattributes["finishedAt"];
-                    newentry.endDate = finishDate.Year + "-" + finishDate.Month + "-" + finishDate.Day;
+                    newentry.endDate = finishDate.Year + "-" + (finishDate.Month < 10 ? "0" + finishDate.Month.ToString() : finishDate.Month.ToString()) + "-" + (finishDate.Day < 10 ? "0" + finishDate.Day.ToString() : finishDate.Day.ToString());
                 }
                 else
                 {
@@ -426,7 +426,7 @@ namespace Nekomata
                 }
                 int progress = Convert.ToInt32((long)eattributes["progress"]);
                 int progressVolumes = Convert.ToInt32((long)eattributes["volumesOwned"]);
-                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress);
+                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress, progressVolumes);
                 newentry.totalSegment = !(object.ReferenceEquals(null, (attributes["chapterCount"]))) ? Convert.ToInt32((long)attributes["chapterCount"]) : 0;
                 newentry.totalVolumes = !(object.ReferenceEquals(null, (attributes["volumeCount"]))) ? Convert.ToInt32((long)attributes["volumeCount"]) : 0;
                 newentry.mediaFormat = (String)attributes["mangaType"];
@@ -437,7 +437,7 @@ namespace Nekomata
                 if (!object.ReferenceEquals(null, eattributes["startedAt"]))
                 {
                     DateTime startDate = (DateTime)eattributes["startedAt"];
-                    newentry.startDate = startDate.Year + "-" + startDate.Month + "-" + startDate.Day;
+                    newentry.startDate = startDate.Year + "-" + (startDate.Month < 10 ? "0" + startDate.Month.ToString() : startDate.Month.ToString()) + "-" + (startDate.Day < 10 ? "0" + startDate.Day.ToString() : startDate.Day.ToString());
                 }
                 else
                 {
@@ -446,7 +446,7 @@ namespace Nekomata
                 if (!object.ReferenceEquals(null, eattributes["finishedAt"]))
                 {
                     DateTime finishDate = (DateTime)eattributes["finishedAt"];
-                    newentry.endDate = finishDate.Year + "-" + finishDate.Month + "-" + finishDate.Day;
+                    newentry.endDate = finishDate.Year + "-" + (finishDate.Month < 10 ? "0" + finishDate.Month.ToString() : finishDate.Month.ToString()) + "-" + (finishDate.Day < 10 ? "0" + finishDate.Day.ToString() : finishDate.Day.ToString());
                 }
                 else
                 {
