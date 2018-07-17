@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* NormalListToMALXML.cs
+ * This class converts a normalized list to MAL XML format.
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,6 +41,7 @@ namespace Nekomata
             this.Username = username;
             this.listtype = type;
             this.list = list;
+            this.currentservice = listservice;
             this.validlist = new List<ListEntry>();
             this.faillist = new List<ListEntry>();
             ProcessList();
@@ -91,7 +99,7 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_start_date>" + entry.startDate + "</my_start_date>");
                 sb.Append(tabformatting + "<my_finish_date>" + entry.endDate + "</my_finish_date>");
                 sb.Append(tabformatting + "<my_rated></my_rated>");
-                sb.Append(tabformatting + "<my_score>" + entry.rating/10 + "</my_score>");
+                sb.Append(tabformatting + "<my_score>" + entry.rating + "</my_score>");
                 sb.Append(tabformatting + "<my_dvd></my_dvd>");
                 sb.Append(tabformatting + "<my_storage></my_storage>");
                 sb.Append(tabformatting + "<my_status>" + ConvertNormalizedStatus(entry.entryStatus) + "</my_status>");
@@ -129,7 +137,7 @@ namespace Nekomata
                 sb.Append(tabformatting + "<my_start_date>" + entry.startDate + "</my_start_date>");
                 sb.Append(tabformatting + "<my_finish_date>" + entry.endDate + "</my_finish_date>");
                 sb.Append(tabformatting + "<my_scanalation_group><![CDATA[]]></my_scanalation_group>");
-                sb.Append(tabformatting + "<my_score>" + entry.rating/10 + "</my_score>");
+                sb.Append(tabformatting + "<my_score>" + entry.rating + "</my_score>");
                 sb.Append(tabformatting + "<my_storage></my_storage>");
                 sb.Append(tabformatting + "<my_status>" + ConvertNormalizedStatus(entry.entryStatus) + "</my_status>");
                 sb.Append(tabformatting + "<my_comments><![CDATA[" + entry.personalComments + "]]></my_comments>");

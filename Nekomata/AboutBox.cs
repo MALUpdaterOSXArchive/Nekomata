@@ -6,7 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+/* AboutBox.cs
+ * The About Dialog
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
 namespace Nekomata
 {
     partial class AboutBox : Form

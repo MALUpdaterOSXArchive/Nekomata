@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
-
+/* FailedWindow.cs
+ * This dialog shows the list of titles that couldn't be exported.
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
 namespace Nekomata
 {
     public partial class FailedWindow : Form

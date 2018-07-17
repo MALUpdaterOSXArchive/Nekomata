@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* ListNormalizer.cs
+ * This class retrieves lists and normalizes them.
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,18 +54,20 @@ namespace Nekomata
         {
             RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
+            GraphQLQuery gquery = new GraphQLQuery();
             switch (currenttype)
             {
                 case EntryType.Anime:
-                    request.AddBody("{ \"query\" : \"query ($id : Int!, $page: Int) {\n  AnimeList: Page (page: $page) {\n    mediaList(userId: $id, type: ANIME) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      episodes: media{episodes}\n      duration: media{duration}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n        type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      watched_episodes: progress\n      watched_status: status\n      rewatch_count: repeat\n      private\n      notes\n      watching_start: startedAt {\n        year\n        month\n        day\n      }\n      watching_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n    pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}\", \"variables\" : { \"id\" : " + currentuserid.ToString() + ", \"page\" : " + page.ToString() + "} }");
+                    gquery.query = "query ($id : Int!, $page: Int) {\n  AnimeList: Page (page: $page) {\n    mediaList(userId: $id, type: ANIME) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      episodes: media{episodes}\n      duration: media{duration}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n        type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      watched_episodes: progress\n      watched_status: status\n      rewatch_count: repeat\n      private\n      notes\n      watching_start: startedAt {\n        year\n        month\n        day\n      }\n      watching_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n    pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
                     break;
                 case EntryType.Manga:
-                    request.AddBody("{ \"query\" : \"query ($id : Int!, $page: Int) {\n  AnimeList: Page (page: $page) {\n    mediaList(userId: $id, type: ANIME) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      episodes: media{episodes}\n      duration: media{duration}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n        type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      watched_episodes: progress\n      watched_status: status\n      rewatch_count: repeat\n      private\n      notes\n      watching_start: startedAt {\n        year\n        month\n        day\n      }\n      watching_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n    pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}\", \"variables\" : { \"id\" : " + currentuserid.ToString() + ", \"page\" : " + page.ToString() + "} }");
+                    gquery.query = "query ($id : Int!, $page: Int) {\n  MangaList: Page (page: $page) {\n    mediaList(userId: $id, type: MANGA) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      chapters: media{chapters}\n      volumes: media{volumes}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n      type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      read_chapters: progress\n      read_volumes: progressVolumes\n      read_status: status\n      reread_count: repeat\n      private\n      notes\n      read_start: startedAt {\n        year\n        month\n        day\n      }\n      read_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n        pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
                     break;
                 default:
                     return new List<ListEntry>();
             }
-
+            gquery.variables = new Dictionary<string, object> { { "id", currentuserid.ToString() }, { "page", page.ToString() } };
+            request.AddJsonBody(gquery);
             IRestResponse response = arestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
@@ -67,16 +76,16 @@ namespace Nekomata
                 switch (currenttype)
                 {
                     case EntryType.Anime:
-                        list = (Dictionary<string, object>)((Dictionary<string, object>)jsonData["data"])["AnimeList"];
+                        list = JObjectToDictionary((JObject)JObjectToDictionary((JObject)jsonData["data"])["AnimeList"]);
                         break;
                     case EntryType.Manga:
-                        list = (Dictionary<string, object>)((Dictionary<string, object>)jsonData["data"])["MangaList"];
+                        list = JObjectToDictionary((JObject)JObjectToDictionary((JObject)jsonData["data"])["MangaList"]);
                         break;
                     default:
                         return new List<ListEntry>();
                 }
-                Dictionary<string, object> pageData = (Dictionary<string, object>)list["page"];
-                tmplist.AddRange((List<Dictionary<string, object>>)list["mediaList"]);
+                Dictionary<string, object> pageData = JObjectToDictionary((JObject)list["pageInfo"]);
+                tmplist.AddRange(((JArray)list["mediaList"]).ToObject<List<Dictionary<string, object>>>());
                 bool nextpage = (bool)pageData[@"hasNextPage"];
                 if (nextpage)
                 {
@@ -111,8 +120,8 @@ namespace Nekomata
 
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
-                int titleId = (int)((Dictionary<string, object>)entry["id"])["id"];
-                String title = (String)((Dictionary<string, object>)((Dictionary<string, object>)entry["title"])["title"])["title"];
+                int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
+                String title = (String)(JObjectToDictionary((JObject)(JObjectToDictionary((JObject)entry["title"]))["title"]))["title"];
                 String tmpstatus = (String)entry["watched_status"];
                 bool reconsuming = false;
                 EntryStatus eStatus;
@@ -141,25 +150,25 @@ namespace Nekomata
                         eStatus = EntryStatus.current;
                         break;
                 }
-                int progress = (int)entry["watched_episodes"];
+                int progress = Convert.ToInt32((long)entry["watched_episodes"]);
                 ListEntry newentry = new ListEntry(titleId, title, eStatus, progress);
-                newentry.totalSegment = (int)((Dictionary<string, object>)entry["episodes"])["episodes"];
-                newentry.mediaFormat = (String)((Dictionary<string, object>)entry["type"])["format"];
+                newentry.totalSegment = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["episodes"]))["episodes"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["episodes"]))["episodes"]) : 0;
+                newentry.mediaFormat = (String)(JObjectToDictionary((JObject)entry["type"]))["format"];
                 newentry.repeating = reconsuming;
-                newentry.repeatCount = (int)entry["rewatch_count"];
+                newentry.repeatCount = Convert.ToInt32((long)entry["rewatch_count"]);
                 newentry.personalComments = (String)entry["notes"];
-                newentry.rating = (int)entry["score"];
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_start"])["year"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_start"])["month"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_start"])["day"]))
+                newentry.rating = Convert.ToInt32((long)entry["score"]);
+                if (!object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_start"])["year"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_start"])["month"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_start"])["day"]))
                 {
-                    newentry.startDate = (int)((Dictionary<string, object>)entry["watching_start"])["year"] + "-" + (int)((Dictionary<string, object>)entry["watching_start"])["month"] + (int)((Dictionary<string, object>)entry["watching_start"])["day"];
+                    newentry.startDate = (long)JObjectToDictionary((JObject)entry["watching_start"])["year"] + "-" + ((long)JObjectToDictionary((JObject)entry["watching_start"])["month"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["watching_start"])["month"]).ToString() : ((long)JObjectToDictionary((JObject)entry["watching_start"])["month"]).ToString()) + "-" + ((long)JObjectToDictionary((JObject)entry["watching_start"])["day"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["watching_start"])["day"]).ToString() : ((long)JObjectToDictionary((JObject)entry["watching_start"])["day"]).ToString());
                 }
                 else
                 {
                     newentry.startDate = "0000-00-00";
                 }
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_end"])["year"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_end"])["month"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["watching_end"])["day"]))
+                if (!object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_end"])["year"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_end"])["month"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["watching_end"])["day"]))
                 {
-                    newentry.endDate = (int)((Dictionary<string, object>)entry["watching_end"])["year"] + "-" + (int)((Dictionary<string, object>)entry["watching_end"])["month"] + (int)((Dictionary<string, object>)entry["watching_end"])["day"];
+                    newentry.endDate = (long)JObjectToDictionary((JObject)entry["watching_end"])["year"] + "-" + ((long)JObjectToDictionary((JObject)entry["watching_end"])["month"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["watching_end"])["month"]).ToString() : ((long)JObjectToDictionary((JObject)entry["watching_end"])["month"]).ToString()) + "-" + ((long)JObjectToDictionary((JObject)entry["watching_end"])["day"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["watching_end"])["day"]).ToString() : ((long)JObjectToDictionary((JObject)entry["watching_end"])["day"]).ToString());
                 }
                 else
                 {
@@ -178,8 +187,8 @@ namespace Nekomata
 
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
-                int titleId = (int)((Dictionary<string, object>)entry["id"])["id"];
-                String title = (String)((Dictionary<string, object>)((Dictionary<string, object>)entry["title"])["title"])["title"];
+                int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
+                String title = (String)(JObjectToDictionary((JObject)(JObjectToDictionary((JObject)entry["title"]))["title"]))["title"];
                 String tmpstatus = (String)entry["read_status"];
                 bool reconsuming = false;
                 EntryStatus eStatus;
@@ -208,27 +217,27 @@ namespace Nekomata
                         eStatus = EntryStatus.current;
                         break;
                 }
-                int progress = (int)entry["read_chapters"];
-                int progressVolumes = (int)entry["read_volumes"];
+                int progress = Convert.ToInt32((long)entry["read_chapters"]);
+                int progressVolumes = Convert.ToInt32((long)entry["read_volumes"]);
                 ListEntry newentry = new ListEntry(titleId,title,eStatus,progress,progressVolumes);
-                newentry.totalSegment = (int)((Dictionary<string, object>)entry["chapters"])["chapters"];
-                newentry.totalVolumes = (int)((Dictionary<string, object>)entry["volumes"])["volumes"];
-                newentry.mediaFormat = (String)((Dictionary<string, object>)entry["type"])["format"];
+                newentry.totalSegment = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["chapters"]))["chapters"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["chapters"]))["chapters"]) : 0 ;
+                newentry.totalVolumes = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["volumes"]))["volumes"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["volumes"]))["volumes"]) : 0;
+                newentry.mediaFormat = (String)(JObjectToDictionary((JObject)entry["type"]))["format"];
                 newentry.repeating = reconsuming;
-                newentry.repeatCount = (int)entry["rewatch_count"];
+                newentry.repeatCount = Convert.ToInt32((long)entry["reread_count"]);
                 newentry.personalComments = (String)entry["notes"];
-                newentry.rating = (int)entry["score"];
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_start"])["year"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_start"])["month"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_start"])["day"]))
+                newentry.rating = Convert.ToInt32((long)entry["score"]);
+                if (!object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_start"])["year"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_start"])["month"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_start"])["day"]))
                 {
-                    newentry.startDate = (int)((Dictionary<string, object>)entry["read_start"])["year"] + "-" + (int)((Dictionary<string, object>)entry["read_start"])["month"] + (int)((Dictionary<string, object>)entry["read_start"])["day"];
+                    newentry.startDate = (long)JObjectToDictionary((JObject)entry["read_start"])["year"] + "-" + ((long)JObjectToDictionary((JObject)entry["read_start"])["month"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["read_start"])["month"]).ToString() : ((long)JObjectToDictionary((JObject)entry["read_start"])["month"]).ToString()) + "-" + ((long)JObjectToDictionary((JObject)entry["read_start"])["day"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["read_start"])["day"]).ToString() : ((long)JObjectToDictionary((JObject)entry["read_start"])["day"]).ToString());
                 }
                 else
                 {
                     newentry.startDate = "0000-00-00";
                 }
-                if (!object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_end"])["year"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_end"])["month"]) && !object.ReferenceEquals(null, ((Dictionary<string, object>)entry["read_end"])["day"]))
+                if (!object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_end"])["year"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_end"])["month"]) && !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["read_end"])["day"]))
                 {
-                    newentry.endDate = (int)((Dictionary<string, object>)entry["read_end"])["year"] + "-" + (int)((Dictionary<string, object>)entry["read_end"])["month"] + (int)((Dictionary<string, object>)entry["read_end"])["day"];
+                    newentry.endDate = (long)JObjectToDictionary((JObject)entry["read_end"])["year"] + "-" + ((long)JObjectToDictionary((JObject)entry["read_end"])["month"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["read_end"])["month"]).ToString() : ((long)JObjectToDictionary((JObject)entry["read_end"])["month"]).ToString()) + "-" + ((long)JObjectToDictionary((JObject)entry["read_end"])["day"] < 10 ? "0" + ((long)JObjectToDictionary((JObject)entry["read_end"])["day"]).ToString() : ((long)JObjectToDictionary((JObject)entry["read_end"])["day"]).ToString());
                 }
                 else
                 {
@@ -466,14 +475,16 @@ namespace Nekomata
             // This methods find a user id associated with a username
             RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
-            request.AddBody("{ \"query\" : \"query ($name: String) {\n  User (name: $name) {\n    id\n    name\n    mediaListOptions {\n      scoreFormat\n    }\n }\n}\", \"variables\" : { \"name\" :" + username + "} }");
-
+            GraphQLQuery query = new GraphQLQuery();
+            query.query = "query ($name: String) {\n  User (name: $name) {\n    id\n    name\n    mediaListOptions {\n      scoreFormat\n    }\n }\n}";
+            query.variables = new Dictionary<string, object> { { "name", username } };
+            request.AddJsonBody(query);
             IRestResponse response = arestclient.Execute(request);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
-                Dictionary<string, object> data = (Dictionary<string, object>)jsonData["data"];
-                int userid = (int)((Dictionary<string, object>)data["User"])["id"];
+                Dictionary<string, object> data = JObjectToDictionary((JObject)jsonData["data"]);
+                int userid = Convert.ToInt32((long)JObjectToDictionary((JObject)data["User"])["id"]);
                 return userid;
             }
             else
@@ -575,7 +586,7 @@ namespace Nekomata
                 default:
                     break;
             }
-            return (int)(advrating * 100);
+            return (int)(advrating * 10);
         }
         private Dictionary<string,object> JObjectToDictionary(JObject jobject)
         {

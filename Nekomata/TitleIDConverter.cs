@@ -1,4 +1,11 @@
-﻿using System;
+﻿/* TitleIDConverter.cs
+ * This class converts one title id from one service to another.
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -103,16 +110,18 @@ namespace Nekomata
 
             RestRequest request = new RestRequest("/", Method.POST);
             request.RequestFormat = DataFormat.Json;
-            request.AddBody("{ \"query\" : \"query ($id: Int!, $type: MediaType) {\n  Media(id: $id, type: $type) {\n    id\n    idMal\n  }\n}\", \"variables\" : { \"id\" :" + anilistid.ToString() + ", \"type\" : " + type + "} }");
-
+            GraphQLQuery gquery = new GraphQLQuery();
+            gquery.query = "query ($id: Int!, $type: MediaType) {\n  Media(id: $id, type: $type) {\n    id\n    idMal\n  }\n}";
+            gquery.variables = new Dictionary<string, object> { { "id" , anilistid.ToString() }, { "type", typestr } };
+            request.AddJsonBody(gquery);
             IRestResponse response = raclient.Execute(request);
-            Thread.Sleep(1);
+            Thread.Sleep(3);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
-                Dictionary<string, object> data = (Dictionary<string, object>)jsonData["data"];
-                Dictionary<string, object> media = (Dictionary<string, object>)jsonData["Media"];
-                int malid = (int)media["idMAL"];
+                Dictionary<string, object> data = JObjectToDictionary((JObject)jsonData["data"]);
+                Dictionary<string, object> media = JObjectToDictionary((JObject)data["Media"]);
+                int malid = Convert.ToInt32((long)media["idMal"]);
                 this.SaveIDtoDatabase(Service.AniList, malid, anilistid, type);
                 return malid;
             }

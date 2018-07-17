@@ -1,4 +1,10 @@
-﻿using System;
+﻿/* MainWindow.cs
+ * This is the main application window.
+ * 
+ * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
+ * Licensed under MIT License
+ */
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -159,6 +165,11 @@ namespace Nekomata
             }));
             exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = true; }));
             progressBar1.Invoke(new Action(delegate { progressBar1.Value = 3; }));
+        }
+
+        private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://malupdaterosx.moe/nekomata/");
         }
     }
 }

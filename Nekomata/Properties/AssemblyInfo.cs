@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Nekomata")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("AniList and Kitsu to MyAnimeList XML Exporter")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MAL Updater OS X Group")]
 [assembly: AssemblyProduct("Nekomata")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2018 MAL Updater OS X")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

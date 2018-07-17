@@ -1,4 +1,4 @@
-﻿/* EntryClass.cs
+﻿/* ListEntry.cs
  * This class specifies the ListEntry object, which is a entry on an Anime or Manga List
  * 
  * Copyright (c) 2018 MAL Updater OS X Group, a division of Moy IT Solutions
