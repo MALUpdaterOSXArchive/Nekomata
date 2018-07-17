@@ -61,7 +61,7 @@ namespace Nekomata
             request.AddHeader("Accept", "application/vnd.api+json");
 
             IRestResponse response = rkclient.Execute(request);
-            Thread.Sleep(1);
+            Thread.Sleep(1000);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
@@ -115,7 +115,7 @@ namespace Nekomata
             gquery.variables = new Dictionary<string, object> { { "id" , anilistid.ToString() }, { "type", typestr } };
             request.AddJsonBody(gquery);
             IRestResponse response = raclient.Execute(request);
-            Thread.Sleep(3);
+            Thread.Sleep(2000);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
@@ -123,6 +123,7 @@ namespace Nekomata
                 Dictionary<string, object> media = JObjectToDictionary((JObject)data["Media"]);
                 int malid = Convert.ToInt32((long)media["idMal"]);
                 this.SaveIDtoDatabase(Service.AniList, malid, anilistid, type);
+                Thread.Sleep(2000);
                 return malid;
             }
             else

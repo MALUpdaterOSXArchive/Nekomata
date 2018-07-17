@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using RestSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace Nekomata
 {
@@ -69,6 +70,7 @@ namespace Nekomata
             gquery.variables = new Dictionary<string, object> { { "id", currentuserid.ToString() }, { "page", page.ToString() } };
             request.AddJsonBody(gquery);
             IRestResponse response = arestclient.Execute(request);
+            Thread.Sleep(1000);
             if (response.StatusCode.GetHashCode() == 200)
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
