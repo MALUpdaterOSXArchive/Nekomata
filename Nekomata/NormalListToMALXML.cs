@@ -92,7 +92,7 @@ namespace Nekomata
                 sb.Append(animepretag);
                 sb.Append(tabformatting + "<series_animedb_id>" + entry.titleId + "</series_animedb_id>");
                 sb.Append(tabformatting + "<series_title><![CDATA[" + entry.title + "]]></series_title>");
-                sb.Append(tabformatting + "<series_type>" + entry.type + "</series_type>");
+                sb.Append(tabformatting + "<series_type>" + entry.mediaFormat + "</series_type>");
                 sb.Append(tabformatting + "<series_episodes>" + entry.totalSegment + "</series_episodes>");
                 sb.Append(tabformatting + "<my_id>0</my_id>");
                 sb.Append(tabformatting + "<my_watched_episodes>" + entry.progress + "</my_watched_episodes>");
