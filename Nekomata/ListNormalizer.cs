@@ -26,6 +26,7 @@ namespace Nekomata
         private int currentuserid;
         private EntryType currenttype;
         public bool erroredout;
+        public TitleIDConverter tconverter;
 
         public ListNormalizer()
         {
@@ -59,10 +60,10 @@ namespace Nekomata
             switch (currenttype)
             {
                 case EntryType.Anime:
-                    gquery.query = "query ($id : Int!, $page: Int) {\n  AnimeList: Page (page: $page) {\n    mediaList(userId: $id, type: ANIME) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      episodes: media{episodes}\n      duration: media{duration}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n        type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      watched_episodes: progress\n      watched_status: status\n      rewatch_count: repeat\n      private\n      notes\n      watching_start: startedAt {\n        year\n        month\n        day\n      }\n      watching_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n    pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
+                    gquery.query = "query ($id : Int!, $page: Int) {\n  AnimeList: Page (page: $page) {\n    mediaList(userId: $id, type: ANIME) {\n      id :media{id\n idMal}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      episodes: media{episodes}\n      duration: media{duration}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n        type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      watched_episodes: progress\n      watched_status: status\n      rewatch_count: repeat\n      private\n      notes\n      watching_start: startedAt {\n        year\n        month\n        day\n      }\n      watching_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n    pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
                     break;
                 case EntryType.Manga:
-                    gquery.query = "query ($id : Int!, $page: Int) {\n  MangaList: Page (page: $page) {\n    mediaList(userId: $id, type: MANGA) {\n      id :media{id}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      chapters: media{chapters}\n      volumes: media{volumes}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n      type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      read_chapters: progress\n      read_volumes: progressVolumes\n      read_status: status\n      reread_count: repeat\n      private\n      notes\n      read_start: startedAt {\n        year\n        month\n        day\n      }\n      read_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n        pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
+                    gquery.query = "query ($id : Int!, $page: Int) {\n  MangaList: Page (page: $page) {\n    mediaList(userId: $id, type: MANGA) {\n      id :media{id\n idMal}\n      entryid: id\n      title: media {title {\n        title: userPreferred\n      }}\n      chapters: media{chapters}\n      volumes: media{volumes}\n      image_url: media{coverImage {\n        large\n        medium\n      }}\n      type: media{format}\n      status: media{status}\n      score: score(format: POINT_100)\n      read_chapters: progress\n      read_volumes: progressVolumes\n      read_status: status\n      reread_count: repeat\n      private\n      notes\n      read_start: startedAt {\n        year\n        month\n        day\n      }\n      read_end: completedAt {\n        year\n        month\n        day\n      }\n    }\n        pageInfo {\n      total\n      currentPage\n      lastPage\n      hasNextPage\n      perPage\n    }\n  }\n}";
                     break;
                 default:
                     return new List<ListEntry>();
@@ -123,6 +124,11 @@ namespace Nekomata
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
                 int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
+                int idMal = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["idMal"]);
+                if (idMal > 0 && tconverter.RetreiveSavedMALIDFromServiceID(Service.AniList,titleId,EntryType.Anime) < 0)
+                {
+                    tconverter.SaveIDtoDatabase(Service.AniList, idMal, titleId, EntryType.Anime);
+                } 
                 String title = (String)(JObjectToDictionary((JObject)(JObjectToDictionary((JObject)entry["title"]))["title"]))["title"];
                 String tmpstatus = (String)entry["watched_status"];
                 bool reconsuming = false;
@@ -190,6 +196,11 @@ namespace Nekomata
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
                 int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
+                int idMal = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["idMal"]);
+                if (idMal > 0 && tconverter.RetreiveSavedMALIDFromServiceID(Service.AniList, titleId, EntryType.Manga) < 0)
+                {
+                    tconverter.SaveIDtoDatabase(Service.AniList, idMal, titleId, EntryType.Manga);
+                }
                 String title = (String)(JObjectToDictionary((JObject)(JObjectToDictionary((JObject)entry["title"]))["title"]))["title"];
                 String tmpstatus = (String)entry["read_status"];
                 bool reconsuming = false;

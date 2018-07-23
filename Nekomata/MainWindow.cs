@@ -24,12 +24,16 @@ namespace Nekomata
         private Thread exportthread;
         private ListNormalizer listnormalizer;
         private NormalListToMALXML nltoMALXML;
+        private TitleIDConverter titleidconverter;
 
         public MainWindow()
         {
             InitializeComponent();
             this.listnormalizer = new ListNormalizer();
             this.nltoMALXML = new NormalListToMALXML();
+            this.titleidconverter = new TitleIDConverter();
+            this.listnormalizer.tconverter = this.titleidconverter;
+            this.nltoMALXML.tconverter = this.titleidconverter;
         }
 
         private void Form1_Load(object sender, EventArgs e)

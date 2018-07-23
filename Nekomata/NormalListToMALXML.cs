@@ -21,7 +21,7 @@ namespace Nekomata
         private EntryType listtype;
         private string Username;
         private Service currentservice;
-        private TitleIDConverter tconverter;
+        public TitleIDConverter tconverter;
 
         private const String headerstring = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\t<!--\n\tCreated by Nekomata\n\tProgrammed by MAL Updater OS X Group Software (James Moy), a division of Moy IT Solutions \n\tNote that not all values are exposed by the API and not all fields will be exported.\n\t--> \n\n\t<myanimelist>";
         private const String footerstring = "\n\n\t</myanimelist>";
@@ -33,7 +33,7 @@ namespace Nekomata
 
         public NormalListToMALXML()
         {
-            this.tconverter = new TitleIDConverter();
+            
         }
 
         public void ConvertNormalizedListToMAL(List<ListEntry> list, EntryType type, String username, Service listservice)

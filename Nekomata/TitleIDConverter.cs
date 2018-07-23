@@ -122,9 +122,16 @@ namespace Nekomata
                 Dictionary<string, object> data = JObjectToDictionary((JObject)jsonData["data"]);
                 Dictionary<string, object> media = JObjectToDictionary((JObject)data["Media"]);
                 int malid = Convert.ToInt32((long)media["idMal"]);
-                this.SaveIDtoDatabase(Service.AniList, malid, anilistid, type);
-                Thread.Sleep(2000);
-                return malid;
+                if (malid > 0)
+                {
+                    this.SaveIDtoDatabase(Service.AniList, malid, anilistid, type);
+                    Thread.Sleep(2000);
+                    return malid;
+                }
+                else
+                {
+                    return -1;
+                }
             }
             else
             {
@@ -133,7 +140,7 @@ namespace Nekomata
 
         }
 
-        private int RetreiveSavedMALIDFromServiceID(Service listService, int titleid, EntryType type)
+        public int RetreiveSavedMALIDFromServiceID(Service listService, int titleid, EntryType type)
         {
             String sql = "";
             int mediatype = type == EntryType.Anime ? 0 : 1;
@@ -158,7 +165,7 @@ namespace Nekomata
             return -1;
         }
 
-        private void SaveIDtoDatabase(Service listservice, int malid, int servicetitleid, EntryType type)
+        public void SaveIDtoDatabase(Service listservice, int malid, int servicetitleid, EntryType type)
         {
            if (this.CheckIfEntryExists(malid,type))
            {
