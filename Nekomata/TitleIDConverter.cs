@@ -121,7 +121,7 @@ namespace Nekomata
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
                 Dictionary<string, object> data = JObjectToDictionary((JObject)jsonData["data"]);
                 Dictionary<string, object> media = JObjectToDictionary((JObject)data["Media"]);
-                int malid = Convert.ToInt32((long)media["idMal"]);
+                int malid = !object.ReferenceEquals(null, media["idMal"]) ? Convert.ToInt32((long)media["idMal"]) : -1;
                 if (malid > 0)
                 {
                     this.SaveIDtoDatabase(Service.AniList, malid, anilistid, type);

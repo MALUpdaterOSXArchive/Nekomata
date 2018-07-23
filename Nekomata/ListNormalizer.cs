@@ -124,7 +124,7 @@ namespace Nekomata
             foreach (Dictionary<String, Object> entry in this.tmplist)
             {
                 int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
-                int idMal = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["idMal"]);
+                int idMal = !object.ReferenceEquals(null, JObjectToDictionary((JObject)entry["id"])["idMal"]) ? Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["idMal"]) : -1;
                 if (idMal > 0 && tconverter.RetreiveSavedMALIDFromServiceID(Service.AniList, titleId, EntryType.Anime) < 0)
                 {
                     tconverter.SaveIDtoDatabase(Service.AniList, idMal, titleId, EntryType.Anime);
