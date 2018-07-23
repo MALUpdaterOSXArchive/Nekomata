@@ -35,7 +35,7 @@ namespace Nekomata
             tmplist = new List<Dictionary<string, object>>();
             attributes = new List<Dictionary<string, object>>();
         }
-        
+
         public List<ListEntry> RetrieveAniListList(EntryType type, String Username)
         {
             this.erroredout = false;
@@ -51,7 +51,7 @@ namespace Nekomata
                 return new List<ListEntry>();
             }
         }
-    
+
         private List<ListEntry> PerformRetrieveAniListList(int page)
         {
             RestRequest request = new RestRequest("/", Method.POST);
@@ -125,10 +125,10 @@ namespace Nekomata
             {
                 int titleId = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["id"]);
                 int idMal = Convert.ToInt32((long)JObjectToDictionary((JObject)entry["id"])["idMal"]);
-                if (idMal > 0 && tconverter.RetreiveSavedMALIDFromServiceID(Service.AniList,titleId,EntryType.Anime) < 0)
+                if (idMal > 0 && tconverter.RetreiveSavedMALIDFromServiceID(Service.AniList, titleId, EntryType.Anime) < 0)
                 {
                     tconverter.SaveIDtoDatabase(Service.AniList, idMal, titleId, EntryType.Anime);
-                } 
+                }
                 String title = (String)(JObjectToDictionary((JObject)(JObjectToDictionary((JObject)entry["title"]))["title"]))["title"];
                 String tmpstatus = (String)entry["watched_status"];
                 bool reconsuming = false;
@@ -232,8 +232,8 @@ namespace Nekomata
                 }
                 int progress = Convert.ToInt32((long)entry["read_chapters"]);
                 int progressVolumes = Convert.ToInt32((long)entry["read_volumes"]);
-                ListEntry newentry = new ListEntry(titleId,title,eStatus,progress,progressVolumes);
-                newentry.totalSegment = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["chapters"]))["chapters"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["chapters"]))["chapters"]) : 0 ;
+                ListEntry newentry = new ListEntry(titleId, title, eStatus, progress, progressVolumes);
+                newentry.totalSegment = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["chapters"]))["chapters"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["chapters"]))["chapters"]) : 0;
                 newentry.totalVolumes = (!object.ReferenceEquals(null, (JObjectToDictionary((JObject)entry["volumes"]))["volumes"])) ? Convert.ToInt32((long)(JObjectToDictionary((JObject)entry["volumes"]))["volumes"]) : 0;
                 newentry.mediaFormat = (String)(JObjectToDictionary((JObject)entry["type"]))["format"];
                 newentry.repeating = reconsuming;
@@ -288,16 +288,16 @@ namespace Nekomata
             {
                 case EntryType.Anime:
                     listtype = "anime";
-                    includes = "canonicalTitle,episodeCount,episodeLength,showType,posterImage,status";
+                    includes = "canonicalTitle,episodeCount,episodeLength,showType,posterImage,status,mappings";
                     break;
                 case EntryType.Manga:
                     listtype = "manga";
-                    includes = "canonicalTitle,chapterCount,volumeCount,mangaType,posterImage,status";
+                    includes = "canonicalTitle,chapterCount,volumeCount,mangaType,posterImage,status,mappings";
                     break;
                 default:
                     return new List<ListEntry>();
             }
-            RestRequest request = new RestRequest("/library-entries?filter[userId]=" + this.currentuserid + "&filter[kind]=" + listtype +"&include=" + listtype + "&fields[" + listtype + "]=" + includes + "&page[limit]=500&page[offset]=" + page, Method.GET);
+            RestRequest request = new RestRequest("/library-entries?filter[userId]=" + this.currentuserid + "&filter[kind]=" + listtype + "&include=" + listtype + "," + listtype + ".mappings" + "&fields[" + listtype + "]=" + includes + "&fields[mappings]=externalSite,externalId&page[limit]=500&page[offset]=" + page, Method.GET);
             request.RequestFormat = DataFormat.Json;
             request.AddHeader("Accept", "application/vnd.api+json");
 
@@ -308,7 +308,7 @@ namespace Nekomata
                 List<Dictionary<string, object>> list;
                 List<Dictionary<string, object>> metadata;
                 list = ((JArray)jsonData["data"]).ToObject<List<Dictionary<string, object>>>();
-                if (!object.ReferenceEquals(null,jsonData["data"]))
+                if (!object.ReferenceEquals(null, jsonData["data"]))
                 {
                     metadata = ((JArray)jsonData["included"]).ToObject<List<Dictionary<string, object>>>();
                     attributes.AddRange(metadata);
@@ -352,7 +352,8 @@ namespace Nekomata
                 int entryId = int.Parse((string)entry["id"]);
                 int titleId = int.Parse((string)((JObject)((JObject)(((JObject)entry["relationships"]).ToObject<Dictionary<string, object>>()["anime"])).ToObject<Dictionary<string, object>>()["data"]).ToObject<Dictionary<string, object>>()["id"]);
                 Dictionary<string, object> eattributes = ((JObject)entry["attributes"]).ToObject<Dictionary<string, object>>();
-                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId)["attributes"]);
+                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId, EntryType.Anime)["attributes"]);
+                RecordMappingIds(titleId, EntryType.Anime);
                 String title = (String)attributes["canonicalTitle"];
                 String tmpstatus = (String)eattributes["status"];
                 bool reconsuming = (bool)eattributes["reconsuming"];
@@ -420,7 +421,8 @@ namespace Nekomata
                 int entryId = int.Parse((string)entry["id"]);
                 int titleId = int.Parse((string)((JObject)((JObject)(((JObject)entry["relationships"]).ToObject<Dictionary<string, object>>()["manga"])).ToObject<Dictionary<string, object>>()["data"]).ToObject<Dictionary<string, object>>()["id"]);
                 Dictionary<string, object> eattributes = ((JObject)entry["attributes"]).ToObject<Dictionary<string, object>>();
-                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId)["attributes"]);
+                Dictionary<string, object> attributes = JObjectToDictionary((JObject)FindMetaData(titleId, EntryType.Manga)["attributes"]);
+                RecordMappingIds(titleId, EntryType.Manga);
                 String title = (String)attributes["canonicalTitle"];
                 String tmpstatus = (String)eattributes["status"];
                 bool reconsuming = (bool)eattributes["reconsuming"];
@@ -509,7 +511,7 @@ namespace Nekomata
         private int GetKitsuUserID(String username)
         {
             // This methods find a user id associated with a username
-            RestRequest request = new RestRequest("/users?filter[slug]="+ username, Method.GET);
+            RestRequest request = new RestRequest("/users?filter[slug]=" + username, Method.GET);
             request.RequestFormat = DataFormat.Json;
             request.AddHeader("Accept", "application/vnd.api+json");
             IRestResponse response = krestclient.Execute(request);
@@ -527,12 +529,51 @@ namespace Nekomata
             }
         }
 
-        private Dictionary<string,object> FindMetaData(int titleid)
+        private Dictionary<string, object> FindMetaData(int titleid, EntryType type)
+        {
+            // This methods finds the metadata that is associated with a title id
+            String typestring = "";
+            switch (type)
+            {
+                case EntryType.Anime:
+                    typestring = "anime";
+                    break;
+                case EntryType.Manga:
+                    typestring = "manga";
+                    break;
+            }
+            Dictionary<string, object> searchpattern = new Dictionary<string, object>();
+            searchpattern["id"] = titleid.ToString();
+            searchpattern["type"] = typestring;
+            return attributes.FirstOrDefault(x => searchpattern.All(x.Contains));
+        }
+        private Dictionary<string, object> FindMapping(int mappingid)
         {
             // This methods finds the metadata that is associated with a title id
             Dictionary<string, object> searchpattern = new Dictionary<string, object>();
-            searchpattern["id"] = titleid.ToString();
+            searchpattern["id"] = mappingid.ToString();
             return attributes.FirstOrDefault(x => searchpattern.All(x.Contains));
+        }
+        private void RecordMappingIds(int titleid, EntryType type)
+        {
+            List<Dictionary<string, object>> attributes = ((JArray)JObjectToDictionary((JObject)JObjectToDictionary((JObject)FindMetaData(titleid, type)["relationships"])["mappings"])["data"]).ToObject<List<Dictionary<string,object>>>();
+            foreach (Dictionary<string, object> mapping in attributes)
+            {
+                int mappingid = int.Parse((string)mapping["id"]);
+                Dictionary<string,object> titleidmap = FindMapping(mappingid);
+                Dictionary<string, object> mapattributes = ((JObject)titleidmap["attributes"]).ToObject<Dictionary<string, object>>();
+                if (mapattributes.ContainsKey("externalSite"))
+                {
+                    if ((string)mapattributes["externalSite"] == "myanimelist/" + (type == EntryType.Anime ? "anime" : "manga"))
+                    {
+                        int mtitleid = int.Parse((string)mapattributes["externalId"]);
+                        if (tconverter.RetreiveSavedMALIDFromServiceID(Service.Kitsu, titleid, type) < 0)
+                        {
+                            tconverter.SaveIDtoDatabase(Service.Kitsu, mtitleid, titleid, type);
+                        }
+                    }
+                }
+            }
         }
         private int ConvertRatingTwentyToRawScore(int ratingTwenty)
         {

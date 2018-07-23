@@ -38,7 +38,7 @@ namespace Nekomata
 
         public static void SendReport(Exception exception, string developerMessage = "")
         {
-            var reportCrash = new ReportCrash("Email where you want to receive crash reports.")
+            var reportCrash = new ReportCrash("ateliershiori@moyit.pro")
             {
                 DeveloperMessage = developerMessage
             };
