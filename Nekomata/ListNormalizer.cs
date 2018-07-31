@@ -519,9 +519,16 @@ namespace Nekomata
             {
                 Dictionary<string, object> jsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content);
                 List<Dictionary<string, object>> data = ((JArray)jsonData["data"]).ToObject<List<Dictionary<string, object>>>();
-                Dictionary<string, object> user = data[0];
-                int userid = int.Parse(((string)user["id"]));
-                return userid;
+                if (data.Count > 0) {
+                    Dictionary<string, object> user = data[0];
+                    int userid = int.Parse(((string)user["id"]));
+                    return userid;
+                }
+                else
+                {
+                    return -1;
+                }
+
             }
             else
             {
