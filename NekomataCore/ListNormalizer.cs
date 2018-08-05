@@ -15,9 +15,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace Nekomata
+namespace NekomataCore
 {
-    class ListNormalizer
+    public class ListNormalizer
     {
         private List<Dictionary<String, Object>> tmplist;
         private List<Dictionary<String, Object>> attributes;

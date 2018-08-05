@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nekomata", "Nekomata\Nekomata.csproj", "{6ACCC2AB-224E-4214-A299-3563F6CDC9F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NekomataCore", "NekomataCore\NekomataCore.csproj", "{19B00327-56CE-406F-AE63-5293E61680A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{6ACCC2AB-224E-4214-A299-3563F6CDC9F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ACCC2AB-224E-4214-A299-3563F6CDC9F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ACCC2AB-224E-4214-A299-3563F6CDC9F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19B00327-56CE-406F-AE63-5293E61680A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B00327-56CE-406F-AE63-5293E61680A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B00327-56CE-406F-AE63-5293E61680A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B00327-56CE-406F-AE63-5293E61680A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

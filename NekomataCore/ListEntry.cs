@@ -7,7 +7,7 @@
 
 using System;
 
-namespace Nekomata
+namespace NekomataCore
 {
     public enum EntryType
     {

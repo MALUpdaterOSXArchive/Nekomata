@@ -11,9 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nekomata
+namespace NekomataCore
 {
-    class NormalListToMALXML
+    public class NormalListToMALXML
     {
         private List<ListEntry> list;
         private List<ListEntry> validlist;

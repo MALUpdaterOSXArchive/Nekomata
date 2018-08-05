@@ -14,15 +14,15 @@ using Newtonsoft.Json;
 using System.Data.SQLite;
 using Newtonsoft.Json.Linq;
 
-namespace Nekomata
+namespace NekomataCore
 {
-    enum Service
+    public enum Service
     {
         Kitsu,
         AniList
     }
 
-    class TitleIDConverter
+    public class TitleIDConverter
     {
         RestClient raclient;
         RestClient rkclient;

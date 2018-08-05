@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
+using NekomataCore;
 
 namespace Nekomata
 {
@@ -81,7 +82,7 @@ namespace Nekomata
             }
         }
 
-        private void BeginExport(string username, Service listservice, EntryType selectedtype)
+        private void BeginExport(string username, NekomataCore.Service listservice, NekomataCore.EntryType selectedtype)
         {
             // Disable Export Button
             exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = false; }));

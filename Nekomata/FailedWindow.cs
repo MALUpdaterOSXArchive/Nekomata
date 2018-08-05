@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using NekomataCore;
 /* FailedWindow.cs
  * This dialog shows the list of titles that couldn't be exported.
  * 
