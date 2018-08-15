@@ -15,9 +15,9 @@ namespace Nekomata
         [STAThread]
         static void Main()
         {
-            Application.ThreadException += ApplicationThreadException;
+            //Application.ThreadException += ApplicationThreadException;
 
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            //AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

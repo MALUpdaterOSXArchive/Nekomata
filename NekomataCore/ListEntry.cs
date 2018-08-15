@@ -16,11 +16,11 @@ namespace NekomataCore
     }
     public enum EntryStatus
     {
-        current,
-        completed,
-        dropped,
-        paused,
-        planning
+        current = 11,
+        completed = 12,
+        dropped = 13,
+        paused = 14,
+        planning = 15
     }
     public class ListEntry
     {

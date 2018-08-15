@@ -18,8 +18,8 @@ namespace NekomataCore
 {
     public enum Service
     {
-        Kitsu,
-        AniList
+        Kitsu = 1,
+        AniList = 2
     }
 
     public class TitleIDConverter

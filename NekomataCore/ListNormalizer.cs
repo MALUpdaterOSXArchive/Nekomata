@@ -319,7 +319,7 @@ namespace NekomataCore
                 if (nextpage)
                 {
                     int newpage = page + 500;
-                    return this.PerformRetrieveAniListList(newpage);
+                    return this.PerformRetrieveKitsuList(newpage);
                 }
                 else
                 {
