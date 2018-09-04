@@ -39,7 +39,11 @@ namespace Nekomata
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            // Create window handle
+            if (!this.IsHandleCreated)
+            {
+                this.CreateControl();
+            }
         }
 
         private void aboutNekomataToolStripMenuItem_Click(object sender, EventArgs e)
