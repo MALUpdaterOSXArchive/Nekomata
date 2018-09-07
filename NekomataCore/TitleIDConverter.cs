@@ -231,16 +231,20 @@ namespace NekomataCore
 
         private void initalizeDatabase()
         {
-            if (File.Exists("Nekomata.sqlite"))
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/Nekomata";
+            if (!Directory.Exists(directory)) {
+                Directory.CreateDirectory(directory);
+            }
+            if (File.Exists(directory + "Nekomata.sqlite"))
             {
-                sqlitecon = new SQLiteConnection("Data Source=Nekomata.sqlite;Version=3;");
+                sqlitecon = new SQLiteConnection("Data Source=" + directory + "\\Nekomata.sqlite;Version=3;");
                 sqlitecon.Open();
             }
             else
             {
                 // Create database and tables
-                SQLiteConnection.CreateFile("Nekomata.sqlite");
-                sqlitecon = new SQLiteConnection("Data Source=Nekomata.sqlite;Version=3;");
+                SQLiteConnection.CreateFile(directory + "\\Nekomata.sqlite");
+                sqlitecon = new SQLiteConnection("Data Source=" + directory + "\\Nekomata.sqlite;Version=3;");
                 sqlitecon.Open();
                 SQLiteCommand createtable = new SQLiteCommand("CREATE TABLE titleids (anidb_id INT, anilist_id INT, kitsu_id INT, malid INT, animeplanet_id VARCHAR(50), mediatype INT)");
                 createtable.Connection = this.sqlitecon;
