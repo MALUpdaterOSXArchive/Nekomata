@@ -26,6 +26,7 @@ namespace Nekomata
         private ListNormalizer listnormalizer;
         private NormalListToMALXML nltoMALXML;
         private TitleIDConverter titleidconverter;
+        private Settingsdlg settings;
 
         public MainWindow()
         {
@@ -148,6 +149,7 @@ namespace Nekomata
         
         private void GenerateXMLandSave()
         {
+            this.setupdateonimport();
             String XML = nltoMALXML.GenerateXML();
             progressBar1.Invoke(new Action(delegate { progressBar1.Value = progressBar1.Value + 1; }));
             this.Invoke(new Action(delegate
@@ -167,7 +169,9 @@ namespace Nekomata
                             xmlfile.WriteLine(line);
                         }
                         xmlfile.Close();
+                        
                     }
+                    this.showexportsuccess();
                 }
                 nltoMALXML.cleanup();
                 listnormalizer.cleanup();
@@ -184,6 +188,33 @@ namespace Nekomata
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://malupdaterosx.moe/donate/");
+        }
+
+        private void setupdateonimport()
+        {
+            nltoMALXML.updateonimportcurrent = Properties.Settings.Default.updateonimportcurrent;
+            nltoMALXML.updateonimportcompleted = Properties.Settings.Default.updateonimportcompleted;
+            nltoMALXML.updateonimportonhold = Properties.Settings.Default.updateonimportonhold;
+            nltoMALXML.updateonimportdropped = Properties.Settings.Default.updateonimportdropped;
+            nltoMALXML.updateonimportplanned = Properties.Settings.Default.updateonimportplanned;
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (this.settings == null)
+            {
+                this.settings = new Settingsdlg();
+            }
+            this.settings.Show();
+        }
+
+        private void showexportsuccess()
+        {
+            DialogResult result = MessageBox.Show("If you find this program helpful, please donate so we can continue developing it. Do you want to view the donation page now?", "Export Successful", MessageBoxButtons.YesNo);
+            if (result == System.Windows.Forms.DialogResult.Yes)
+            {
+                System.Diagnostics.Process.Start("https://malupdaterosx.moe/donate/");
+            }
         }
     }
 }

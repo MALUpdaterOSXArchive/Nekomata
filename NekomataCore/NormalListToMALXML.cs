@@ -23,6 +23,13 @@ namespace NekomataCore
         private Service currentservice;
         public TitleIDConverter tconverter;
 
+        // Update on import
+        public bool updateonimportcurrent;
+        public bool updateonimportcompleted;
+        public bool updateonimportonhold;
+        public bool updateonimportdropped;
+        public bool updateonimportplanned;
+
         private const String headerstring = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\t<!--\n\tCreated by Nekomata\n\tProgrammed by MAL Updater OS X Group Software (James Moy), a division of Moy IT Solutions \n\tNote that not all values are exposed by the API and not all fields will be exported.\n\t--> \n\n\t<myanimelist>";
         private const String footerstring = "\n\n\t</myanimelist>";
         private const String animepretag = "\n\n\t\t<anime>";
@@ -109,7 +116,7 @@ namespace NekomataCore
                 sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
                 sb.Append(tabformatting + "<my_rewatching>" + (entry.repeating ? "1" : "0") + "</my_rewatching>");
                 sb.Append(tabformatting + "<my_rewatching_ep>0</my_rewatching_ep>");
-                sb.Append(tabformatting + "<update_on_import>0</update_on_import>");
+                sb.Append(tabformatting + "<update_on_import>" + this.getUpdateonimport(entry.entryStatus) + "</update_on_import>");
                 sb.Append(animeendtag);
             }
             sb.Append(footerstring);
@@ -144,7 +151,7 @@ namespace NekomataCore
                 sb.Append(tabformatting + "<my_times_read>" + entry.repeatCount + "</my_times_read>");
                 sb.Append(tabformatting + "<my_tags><![CDATA[" + "" + "]]></my_tags>");
                 sb.Append(tabformatting + "<my_reread_value></my_reread_value>");
-                sb.Append(tabformatting + "<update_on_import>0</update_on_import>");
+                sb.Append(tabformatting + "<update_on_import>" + this.getUpdateonimport(entry.entryStatus) + "</update_on_import>");
                 sb.Append(mangaendtag);
             }
             sb.Append(footerstring);
@@ -211,6 +218,24 @@ namespace NekomataCore
             this.list.Clear();
             this.validlist.Clear();
             this.faillist.Clear();
+        }
+        private int getUpdateonimport(EntryStatus status)
+        {
+            switch (status)
+            {
+                case EntryStatus.current:
+                    return this.updateonimportcurrent ? 1 : 0;
+                case EntryStatus.completed:
+                    return this.updateonimportcompleted ? 1 : 0;
+                case EntryStatus.dropped:
+                    return this.updateonimportdropped ? 1 : 0;
+                case EntryStatus.paused:
+                    return this.updateonimportonhold ? 1 : 0;
+                case EntryStatus.planning:
+                    return this.updateonimportplanned ? 1 : 0;
+                default:
+                    return 0;
+            }
         }
     }
 }
