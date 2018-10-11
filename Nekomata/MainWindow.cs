@@ -45,7 +45,12 @@ namespace Nekomata
             {
                 this.CreateControl();
             }
-        }
+            InitializeComponent();
+            WinSparkle.win_sparkle_set_appcast_url("https://updates.malupdaterosx.moe/nekomata/nekomata.xml");
+            //start automatic update checks.
+            WinSparkle.win_sparkle_init();
+ 
+    }
 
         private void aboutNekomataToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -89,6 +94,11 @@ namespace Nekomata
 
         private void BeginExport(string username, NekomataCore.Service listservice, NekomataCore.EntryType selectedtype)
         {
+            // Create window handle
+            if (!this.IsHandleCreated)
+            {
+                this.CreateControl();
+            }
             // Disable Export Button
             exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = false; }));
             // Retrieve list
@@ -182,7 +192,8 @@ namespace Nekomata
 
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("https://malupdaterosx.moe/nekomata/");
+            //System.Diagnostics.Process.Start("https://malupdaterosx.moe/nekomata/");
+            WinSparkle.win_sparkle_check_update_with_ui();
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

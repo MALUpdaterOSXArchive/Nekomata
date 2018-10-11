@@ -18,6 +18,7 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            WinSparkle.win_sparkle_cleanup();
         }
 
         #region Windows Form Designer generated code

@@ -89,6 +89,7 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="WinSparkle.cs" />
     <Compile Include="FailedWindow.cs">
       <SubType>Form</SubType>
     </Compile>
