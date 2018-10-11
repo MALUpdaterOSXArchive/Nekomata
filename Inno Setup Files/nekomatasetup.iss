@@ -52,11 +52,11 @@ Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\System.Data.
 Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\System.Data.SQLite.Linq.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\System.Data.SQLite.xml"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-Source: "Nekomata\Nekomata\bin\Release\x64\SQLite.Interop.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
-Source: "Nekomata\Nekomata\bin\Release\x64\sqlite3.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
-Source: "Nekomata\Nekomata\bin\Release\x86\SQLite.Interop.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
-Source: "Nekomata\Nekomata\bin\Release\x86\sqlite3.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
-Source: "Nekomata\Nekomata\bin\Release\x86\WinSparkle.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x64\SQLite.Interop.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x64\sqlite3.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x86\SQLite.Interop.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
+Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x86\sqlite3.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
+Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x86\WinSparkle.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\Nekomata.exe"
