@@ -45,7 +45,6 @@ namespace Nekomata
             {
                 this.CreateControl();
             }
-            InitializeComponent();
             WinSparkle.win_sparkle_set_appcast_url("https://updates.malupdaterosx.moe/nekomata/nekomata.xml");
             //start automatic update checks.
             WinSparkle.win_sparkle_init();
