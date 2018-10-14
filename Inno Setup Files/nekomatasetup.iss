@@ -2,10 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Nekomata"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.1.2"
 #define MyAppPublisher "MAL Updater OS X Group"
 #define MyAppURL "https://malupdaterosx.moe/nekomata/"
-#define MyAppExeName "MyProg.exe"
+#define MyAppExeName "Nekomata.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -21,7 +21,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-LicenseFile=C:\Users\Kafuu Chino\Desktop\license.rtf
+LicenseFile=C:\Users\Kafuu Chino\Desktop\Nekomata\Inno Setup Files\license.rtf
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes

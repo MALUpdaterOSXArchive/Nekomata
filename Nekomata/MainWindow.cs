@@ -48,8 +48,8 @@ namespace Nekomata
             WinSparkle.win_sparkle_set_appcast_url("https://updates.malupdaterosx.moe/nekomata/nekomata.xml");
             //start automatic update checks.
             WinSparkle.win_sparkle_init();
- 
-    }
+
+        }
 
         private void aboutNekomataToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -82,12 +82,12 @@ namespace Nekomata
                 {
                     selectedtype = EntryType.Manga;
                 }
-                this.exportthread = new Thread(() => BeginExport(usernameField.Text,selectedservice, selectedtype));
+                this.exportthread = new Thread(() => BeginExport(usernameField.Text, selectedservice, selectedtype));
                 this.exportthread.Start();
             }
             else
             {
-                MessageBox.Show("You did not specify a username. Please specify one and try again","Export Failed");
+                MessageBox.Show("You did not specify a username. Please specify one and try again", "Export Failed");
             }
         }
 
@@ -99,10 +99,9 @@ namespace Nekomata
                 this.CreateControl();
             }
             // Disable Export Button
-            exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = false; }));
+            Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = false; }), false);
             // Retrieve list
-            progressBar1.Invoke(new Action(delegate { progressBar1.Maximum = 3;}));
-            progressBar1.Invoke(new Action(delegate { progressBar1.Value = 0; }));
+            Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Maximum = 3; progressBar1.Value = 0; }), false);
             List<ListEntry> userlist;
             switch (listservice)
             {
@@ -118,18 +117,18 @@ namespace Nekomata
             }
             if (!listnormalizer.erroredout)
             {
-                progressBar1.Invoke(new Action(delegate { progressBar1.Value = progressBar1.Value + 1; }));
+                Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = progressBar1.Value + 1; }), true);
                 nltoMALXML.ConvertNormalizedListToMAL(userlist, selectedtype, username, listservice);
                 if (nltoMALXML.InvalidEntriesExist())
                 {
-                    this.Invoke(new Action(delegate
+                    Utility.SafeInvoke(this, new Action(delegate
                     {
                         FailedWindow fdlg = new FailedWindow(nltoMALXML.faillist);
                         if (fdlg.ShowDialog() == DialogResult.OK)
                         {
                             GenerateXMLandSave();
                         }
-                    }));
+                    }), true);
                 }
                 else
                 {
@@ -151,17 +150,17 @@ namespace Nekomata
 
         private void ErrorOut(string message)
         {
-            exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = true; }));
-            progressBar1.Invoke(new Action(delegate { progressBar1.Value = 3; }));
+            Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = true; }), false);
+            Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = 3; }), false);
             MessageBox.Show(message, "Export Failed");
         }
-        
+
         private void GenerateXMLandSave()
         {
             this.setupdateonimport();
             String XML = nltoMALXML.GenerateXML();
-            progressBar1.Invoke(new Action(delegate { progressBar1.Value = progressBar1.Value + 1; }));
-            this.Invoke(new Action(delegate
+            Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = progressBar1.Value + 1; }), false);
+            Utility.SafeInvoke(this, new Action(delegate
             {
                 SaveFileDialog savedialog = new SaveFileDialog();
                 savedialog.Filter = "Extended Markup Language file (*.xml)|*.xml";
@@ -178,15 +177,15 @@ namespace Nekomata
                             xmlfile.WriteLine(line);
                         }
                         xmlfile.Close();
-                        
+
                     }
                     this.showexportsuccess();
                 }
                 nltoMALXML.cleanup();
                 listnormalizer.cleanup();
-            }));
-            exportBtn.Invoke(new Action(delegate { exportBtn.Enabled = true; }));
-            progressBar1.Invoke(new Action(delegate { progressBar1.Value = 3; }));
+            }), true);
+            Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = true; }), false);
+            Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = 3; }), false);
         }
 
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -224,6 +223,39 @@ namespace Nekomata
             if (result == System.Windows.Forms.DialogResult.Yes)
             {
                 System.Diagnostics.Process.Start("https://malupdaterosx.moe/donate/");
+            }
+        }
+
+
+    }
+    public static class Utility
+    {
+        public static void SafeInvoke(this Control uiElement, Action updater, bool forceSynchronous)
+        {
+            if (uiElement == null)
+            {
+                throw new ArgumentNullException("uiElement");
+            }
+
+            if (uiElement.InvokeRequired)
+            {
+                if (forceSynchronous)
+                {
+                    uiElement.Invoke((Action)delegate { SafeInvoke(uiElement, updater, forceSynchronous); });
+                }
+                else
+                {
+                    uiElement.BeginInvoke((Action)delegate { SafeInvoke(uiElement, updater, forceSynchronous); });
+                }
+            }
+            else
+            {
+                if (uiElement.IsDisposed)
+                {
+                    throw new ObjectDisposedException("Control is already disposed.");
+                }
+
+                updater();
             }
         }
     }
