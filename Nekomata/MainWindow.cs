@@ -53,7 +53,7 @@ namespace Nekomata
 
         private void aboutNekomataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.aboutbox == null)
+            if (this.aboutbox == null || this.aboutbox.IsDisposed)
             {
                 aboutbox = new AboutBox();
             }
@@ -210,7 +210,7 @@ namespace Nekomata
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.settings == null)
+            if (this.settings == null || this.settings.IsDisposed)
             {
                 this.settings = new Settingsdlg();
             }
