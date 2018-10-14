@@ -36,6 +36,14 @@ namespace Nekomata
             this.titleidconverter = new TitleIDConverter();
             this.listnormalizer.tconverter = this.titleidconverter;
             this.nltoMALXML.tconverter = this.titleidconverter;
+            if (!this.titleidconverter.sqlliteinitalized)
+            {
+                DialogResult result = MessageBox.Show("Only one instance of Nekomata can run at a time. Nekomata will now exit.", "Error", MessageBoxButtons.OK);
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    Environment.Exit(0);
+                }
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
