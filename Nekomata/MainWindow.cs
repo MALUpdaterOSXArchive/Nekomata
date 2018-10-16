@@ -6,16 +6,11 @@
  */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using NekomataCore;
+using System.Runtime.InteropServices;
 
 namespace Nekomata
 {
@@ -27,6 +22,11 @@ namespace Nekomata
         private NormalListToMALXML nltoMALXML;
         private TitleIDConverter titleidconverter;
         private Settingsdlg settings;
+        [DllImport("user32")]
+        private static extern int GetSystemMenu(IntPtr hWnd, bool bRevert);
+        [DllImport("user32")]
+        private static extern bool DeleteMenu(int hMenu, int uPosition, int uFlags);
+        private int s_SystemMenuHandle = 0;
 
         public MainWindow()
         {
@@ -108,6 +108,7 @@ namespace Nekomata
             }
             // Disable Export Button
             Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = false; }), false);
+            Utility.SafeInvoke(this, new Action(delegate { this.disableclose(); exitToolStripMenuItem.Enabled = false; }), false);
             // Retrieve list
             Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Maximum = 3; progressBar1.Value = 0; }), false);
             List<ListEntry> userlist;
@@ -160,6 +161,7 @@ namespace Nekomata
         {
             Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = true; }), false);
             Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = 3; }), false);
+            Utility.SafeInvoke(this, new Action(delegate { this.enableclose(); exitToolStripMenuItem.Enabled = true; }), false);
             MessageBox.Show(message, "Export Failed");
         }
 
@@ -194,6 +196,7 @@ namespace Nekomata
             }), true);
             Utility.SafeInvoke(exportBtn, new Action(delegate { exportBtn.Enabled = true; }), false);
             Utility.SafeInvoke(progressBar1, new Action(delegate { progressBar1.Value = 3; }), false);
+            Utility.SafeInvoke(this, new Action(delegate { this.enableclose(); exitToolStripMenuItem.Enabled = true; }), false);
         }
 
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -234,7 +237,16 @@ namespace Nekomata
             }
         }
 
-
+        private void disableclose()
+        {
+            this.s_SystemMenuHandle = GetSystemMenu(this.Handle, false);
+            DeleteMenu(this.s_SystemMenuHandle, 6, 1024);
+        }
+        private void enableclose()
+        {
+            this.s_SystemMenuHandle = GetSystemMenu(this.Handle, true);
+            DeleteMenu(this.s_SystemMenuHandle, 6, 1024);
+        }
     }
     public static class Utility
     {

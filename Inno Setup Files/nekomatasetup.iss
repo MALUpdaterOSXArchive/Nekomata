@@ -26,6 +26,7 @@ OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
 MinVersion=0,6.1
+DisableWelcomePage=False
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -61,6 +62,7 @@ Source: "C:\Users\Kafuu Chino\Desktop\Nekomata\Nekomata\bin\Release\x86\WinSpark
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\Nekomata.exe"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\Nekomata.exe"; Tasks: desktopicon
+Name: "{group}\{cm:UninstallProgram, {#MyAppName}}"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\Nekomata.exe"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"
