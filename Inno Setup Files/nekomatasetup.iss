@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Nekomata"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "MAL Updater OS X Group"
 #define MyAppURL "https://malupdaterosx.moe/nekomata/"
 #define MyAppExeName "Nekomata.exe"
