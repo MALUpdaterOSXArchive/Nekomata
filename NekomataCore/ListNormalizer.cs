@@ -387,7 +387,7 @@ namespace NekomataCore
                 newentry.repeatCount = Convert.ToInt32((long)eattributes["reconsumeCount"]);
                 newentry.personalComments = (String)eattributes["notes"];
                 newentry.rating = !object.ReferenceEquals(null, eattributes["ratingTwenty"]) ? ConvertRatingTwentyToRawScore(Convert.ToInt32((long)eattributes["ratingTwenty"])) : 0;
-                if (!object.ReferenceEquals(null, eattributes["startedAt"]))
+                if (!object.ReferenceEquals(null, eattributes["startedAt"]) && eattributes["startedAt"].GetType() == typeof(DateTime))
                 {
                     DateTime startDate = (DateTime)eattributes["startedAt"];
                     newentry.startDate = startDate.Year + "-" + (startDate.Month < 10 ? "0" + startDate.Month.ToString() : startDate.Month.ToString()) + "-" + (startDate.Day < 10 ? "0" + startDate.Day.ToString() : startDate.Day.ToString());
@@ -396,7 +396,7 @@ namespace NekomataCore
                 {
                     newentry.startDate = "0000-00-00";
                 }
-                if (!object.ReferenceEquals(null, eattributes["finishedAt"]))
+                if (!object.ReferenceEquals(null, eattributes["finishedAt"]) && eattributes["finishedAt"].GetType() == typeof(DateTime))
                 {
                     DateTime finishDate = (DateTime)eattributes["finishedAt"];
                     newentry.endDate = finishDate.Year + "-" + (finishDate.Month < 10 ? "0" + finishDate.Month.ToString() : finishDate.Month.ToString()) + "-" + (finishDate.Day < 10 ? "0" + finishDate.Day.ToString() : finishDate.Day.ToString());
